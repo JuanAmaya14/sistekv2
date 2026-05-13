@@ -3,6 +3,7 @@ const API_URL = 'http://localhost:4000/api';
 export interface User {
   id: number;
   username: string;
+  email: string;
   role: string;
 }
 
@@ -86,11 +87,11 @@ export const authService = {
     }
   },
   // Registrar usuario
-  async register(username: string, password: string, role: string = 'cliente'): Promise<AuthResponse> {
+  async register(username: string, email: string, password: string, role: string = 'cliente'): Promise<AuthResponse> {
     const response = await fetch(`${API_URL}/users/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, role })
+      body: JSON.stringify({ username, email, password, role })
     });
     
     if (!response.ok) {
@@ -111,11 +112,11 @@ export const authService = {
   },
 
   // Login
-  async login(username: string, password: string): Promise<AuthResponse> {
+  async login(email: string, password: string): Promise<AuthResponse> {
     const response = await fetch(`${API_URL}/users/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ email, password })
     });
     
     if (!response.ok) {

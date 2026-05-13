@@ -4,27 +4,25 @@ import * as userService from '../services/userService';
 // Registrar usuario (HU-1)
 export const register = async (req: Request, res: Response) => {
   try {
-    const { username, password, role } = req.body;
+    const { username, email, password, role } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username y password son requeridos' });
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: 'Usuario, email y password son requeridos' });
     }
 
-    // Verificar si el usuario ya existe
-    const existingUser = await userService.getUserByUsername(username);
+    const existingUser = await userService.getUserByEmail(email);
     if (existingUser) {
-      return res.status(400).json({ error: 'El usuario ya está registrado' });
+      return res.status(400).json({ error: 'El email ya está registrado' });
     }
 
-    const newUser = await userService.createUser(username, password, role || 'cliente');
-    
-    // Generar token
+    const newUser = await userService.createUser(username, email, password, role || 'cliente');
+
     const token = userService.generateToken(newUser.id, newUser.username, newUser.role);
 
-    res.status(201).json({ 
-      message: 'Usuario registrado exitosamente', 
+    res.status(201).json({
+      message: 'Usuario registrado exitosamente',
       user: newUser,
-      token 
+      token
     });
   } catch (error: any) {
     res.status(500).json({ error: 'Error al registrar usuario: ' + error.message });
@@ -34,13 +32,13 @@ export const register = async (req: Request, res: Response) => {
 // Login (HU-1)
 export const login = async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username y password son requeridos' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email y password son requeridos' });
     }
 
-    const user = await userService.getUserByUsername(username);
+    const user = await userService.getUserByEmail(email);
     if (!user) {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
@@ -50,7 +48,6 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Credenciales incorrectas' });
     }
 
-    // Generar token
     const token = userService.generateToken(user.id, user.username, user.role);
 
     res.json({
@@ -58,6 +55,7 @@ export const login = async (req: Request, res: Response) => {
       user: {
         id: user.id,
         username: user.username,
+        email: user.email,
         role: user.role
       },
       token

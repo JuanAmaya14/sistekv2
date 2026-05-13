@@ -6,6 +6,7 @@ import "../styles.css";
 function Register() {
 
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -14,7 +15,7 @@ function Register() {
 
   const handleRegister = async () => {
 
-    if (!username || !password) {
+    if (!username || !email || !password) {
       setError("Todos los campos son obligatorios");
       return;
     }
@@ -23,7 +24,7 @@ function Register() {
     setError("");
 
     try {
-      await authService.register(username, password, "cliente");
+      await authService.register(username, email, password, "cliente");
       alert("Registro exitoso");
       navigate("/");
     } catch (err: any) {
@@ -50,16 +51,24 @@ function Register() {
 
           {error && <p style={{ color: 'red' }}>{error}</p>}
 
-          <input 
-            placeholder="Usuario" 
+          <input
+            placeholder="Nombre de usuario"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             disabled={loading}
           />
 
-          <input 
-            type="password" 
-            placeholder="Contraseña" 
+          <input
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+          />
+
+          <input
+            type="password"
+            placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={loading}

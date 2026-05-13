@@ -4,11 +4,17 @@ import jwt from 'jsonwebtoken';
 
 // Obtener todos los usuarios
 export const getAllUsers = async () => {
-  const result = await pool.query('SELECT id, username, role FROM users');
+  const result = await pool.query('SELECT id, username, email, role FROM users');
   return result.rows;
 };
 
-// Obtener usuario por username
+// Obtener usuario por email
+export const getUserByEmail = async (email: string) => {
+  const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+  return result.rows[0];
+};
+
+// Obtener usuario por username (mantenido para compatibilidad interna)
 export const getUserByUsername = async (username: string) => {
   const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
   return result.rows[0];
@@ -16,17 +22,17 @@ export const getUserByUsername = async (username: string) => {
 
 // Obtener usuario por ID
 export const getUserById = async (id: number) => {
-  const result = await pool.query('SELECT id, username, role FROM users WHERE id = $1', [id]);
+  const result = await pool.query('SELECT id, username, email, role FROM users WHERE id = $1', [id]);
   return result.rows[0];
 };
 
 // Crear usuario (con hash de contraseña)
-export const createUser = async (username: string, password: string, role: string = 'cliente') => {
+export const createUser = async (username: string, email: string, password: string, role: string = 'cliente') => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role',
-      [username, hashedPassword, role]
+      'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role',
+      [username, email, hashedPassword, role]
     );
     return result.rows[0];
   } catch (error: any) {
@@ -51,12 +57,12 @@ export const generateToken = (userId: number, username: string, role: string): s
 
 // Obtener agentes
 export const getAgents = async () => {
-  const result = await pool.query("SELECT id, username FROM users WHERE role = 'agente'");
+  const result = await pool.query("SELECT id, username, email FROM users WHERE role = 'agente'");
   return result.rows;
 };
 
 // Obtener administradores
 export const getAdmins = async () => {
-  const result = await pool.query("SELECT id, username FROM users WHERE role = 'administrador'");
+  const result = await pool.query("SELECT id, username, email FROM users WHERE role = 'administrador'");
   return result.rows;
 };

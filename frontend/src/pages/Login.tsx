@@ -5,7 +5,7 @@ import "../styles.css";
 
 function Login() {
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +19,7 @@ function Login() {
   }, [navigate]);
 
   const handleLogin = async () => {
-    if (!username || !password) {
+    if (!email || !password) {
       setError("Todos los campos son obligatorios");
       return;
     }
@@ -28,7 +28,7 @@ function Login() {
     setError("");
 
     try {
-      await authService.login(username, password);
+      await authService.login(email, password);
       navigate("/dashboard");
     } catch (err: any) {
       setError(err.message || "Error al iniciar sesión");
@@ -53,10 +53,11 @@ function Login() {
 
           {error && <p style={{ color: 'red' }}>{error}</p>}
 
-          <input 
-            placeholder="Usuario"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+          <input
+            type="email"
+            placeholder="Correo electrónico"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
           />
 
