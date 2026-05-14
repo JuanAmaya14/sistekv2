@@ -17,6 +17,8 @@ function Tickets() {
   const [sortByPriority, setSortByPriority] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroBusqueda, setFiltroBusqueda] = useState("");
   // ESTADOS (Solo para uso del Agente según HU-007)
 const [historialSelected, setHistorialSelected] = useState<any[]>([]);
 const [showHistorialId, setShowHistorialId] = useState<number | null>(null);
@@ -52,15 +54,15 @@ const verHistorial = async (ticketId: number) => {
     }
   }, [navigate]);
 
-  // Refrescar tickets cada 5 segundos
+  // Refrescar tickets cada 5 segundos (solo si no hay búsqueda activa)
   useEffect(() => {
-    if (user) {
+    if (user && !filtroBusqueda) {
       const interval = setInterval(() => {
         cargarTickets();
       }, 5000);
       return () => clearInterval(interval);
     }
-  }, [user]);
+  }, [user, filtroBusqueda]);
 
   const cargarTickets = async () => {
     try {
@@ -69,6 +71,23 @@ const verHistorial = async (ticketId: number) => {
     } catch (err: any) {
       console.error("Error cargando tickets:", err.message);
     }
+  };
+
+  const realizarBusqueda = async () => {
+    const q = busqueda.trim();
+    setFiltroBusqueda(q);
+    try {
+      const resultado = await ticketService.searchTickets(q);
+      setTickets(resultado);
+    } catch (err: any) {
+      console.error("Error buscando tickets:", err.message);
+    }
+  };
+
+  const limpiarBusqueda = async () => {
+    setBusqueda("");
+    setFiltroBusqueda("");
+    await cargarTickets();
   };
 
   const crearTicket = async () => {
@@ -170,21 +189,10 @@ const verHistorial = async (ticketId: number) => {
 
           <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
             <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              disabled={loading}
-              style={{ flex: 1, padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
-            >
-              {PRIORIDADES.map(p => (
-                <option key={p} value={p}>Prioridad {p}</option>
-              ))}
-            </select>
-
-            <select 
               value={type}
               onChange={(e) => setType(e.target.value)}
               disabled={loading}
-              style={{ flex: 1, padding: "10px", border: "1px solid #ddd", borderRadius: "4px" }}
+              style={{ flex: 1, padding: "10px", border: "1px solid #ddd", borderRadius: "4px", color: "#1f2937", backgroundColor: "white" }}
             >
               <option value="Software">Software</option>
               <option value="Hardware">Hardware</option>
@@ -211,6 +219,70 @@ const verHistorial = async (ticketId: number) => {
             {loading ? "Creando..." : "Crear Ticket"}
           </button>
         </div>
+
+        {/* BARRA DE BÚSQUEDA */}
+        <div style={{ display: "flex", gap: "10px", marginBottom: "15px", alignItems: "center" }}>
+          <input
+            type="text"
+            placeholder="Buscar por título o descripción..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && realizarBusqueda()}
+            style={{
+              flex: 1,
+              padding: "11px 16px",
+              border: "1px solid #d1d5db",
+              borderRadius: "4px",
+              fontSize: "14px",
+              color: "#1f2937",
+              backgroundColor: "white",
+              marginTop: "0",
+              boxSizing: "border-box"
+            }}
+          />
+          <button
+            onClick={realizarBusqueda}
+            style={{
+              backgroundColor: "#3b82f6",
+              color: "white",
+              padding: "8px 18px",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "bold",
+              width: "auto",
+              marginTop: "0",
+              flexShrink: 0
+            }}
+          >
+            Buscar
+          </button>
+          {filtroBusqueda && (
+            <button
+              onClick={limpiarBusqueda}
+              style={{
+                backgroundColor: "#e5e7eb",
+                color: "#374151",
+                padding: "8px 14px",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "14px",
+                width: "auto",
+                marginTop: "0",
+                flexShrink: 0
+              }}
+            >
+              ✕ Limpiar
+            </button>
+          )}
+        </div>
+        {filtroBusqueda && (
+          <p style={{ color: "#6b7280", fontSize: "13px", marginBottom: "10px" }}>
+            Resultados para: <strong>"{filtroBusqueda}"</strong> ({tickets.length} encontrado{tickets.length !== 1 ? "s" : ""})
+          </p>
+        )}
 
         {/* MIS TICKETS */}
         <h3>Mis Tickets ({tickets.length})</h3>
@@ -291,8 +363,77 @@ const verHistorial = async (ticketId: number) => {
           </div>
         </div>
 
+        {/* BARRA DE BÚSQUEDA */}
+        <div style={{ display: "flex", gap: "10px", marginBottom: "20px", alignItems: "center" }}>
+          <input
+            type="text"
+            placeholder="Buscar por título o descripción..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && realizarBusqueda()}
+            style={{
+              flex: 1,
+              padding: "11px 16px",
+              border: "1px solid #d1d5db",
+              borderRadius: "4px",
+              fontSize: "14px",
+              color: "#1f2937",
+              backgroundColor: "white",
+              marginTop: "0",
+              boxSizing: "border-box"
+            }}
+          />
+          <button
+            onClick={realizarBusqueda}
+            style={{
+              backgroundColor: "#3b82f6",
+              color: "white",
+              padding: "8px 18px",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: "bold",
+              width: "auto",
+              marginTop: "0",
+              flexShrink: 0
+            }}
+          >
+            Buscar
+          </button>
+          {filtroBusqueda && (
+            <button
+              onClick={limpiarBusqueda}
+              style={{
+                backgroundColor: "#e5e7eb",
+                color: "#374151",
+                padding: "8px 14px",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "14px",
+                width: "auto",
+                marginTop: "0",
+                flexShrink: 0
+              }}
+            >
+              ✕ Limpiar
+            </button>
+          )}
+        </div>
+
+        {filtroBusqueda && (
+          <p style={{ color: "#6b7280", fontSize: "13px", marginBottom: "10px" }}>
+            Resultados para: <strong>"{filtroBusqueda}"</strong> ({tickets.length} encontrado{tickets.length !== 1 ? "s" : ""})
+          </p>
+        )}
+
         {tickets.length === 0 ? (
-          <p style={{ color: "#666", textAlign: "center", padding: "20px" }}>No tienes tickets asignados</p>
+          <p style={{ color: "#666", textAlign: "center", padding: "20px" }}>
+            {filtroBusqueda
+              ? `No se encontraron tickets con "${filtroBusqueda}"`
+              : "No tienes tickets asignados"}
+          </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
             {(sortByPriority
@@ -411,8 +552,8 @@ const verHistorial = async (ticketId: number) => {
                 </div>
 
               {/* --- SECCIÓN DE HISTORIAL PARA EL AGENTE (HU-007) --- */}
-<div style={{ marginTop: "15px", borderTop: "1px solid #e5e7eb", paddingTop: "10px" }}>
-  <button 
+<div style={{ marginTop: "15px", borderTop: "1px dashed #ccc", paddingTop: "10px" }}>
+  <button
     onClick={() => verHistorial(ticket.id)}
     style={{
       background: "none",
@@ -421,30 +562,51 @@ const verHistorial = async (ticketId: number) => {
       fontSize: "13px",
       fontWeight: "bold",
       cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      gap: "5px",
       padding: "0"
     }}
   >
     {showHistorialId === ticket.id ? "▲ Ocultar Actividad" : "▼ Ver Actividad Reciente"}
+    {loadingHistorial && showHistorialId === ticket.id && " (Cargando...)"}
   </button>
 
   {showHistorialId === ticket.id && (
-    <div style={{ 
-      marginTop: "10px", 
-      backgroundColor: "#ffffff", 
-      padding: "10px", 
-      borderRadius: "4px", 
-      border: "1px solid #d1d5db" 
+    <div style={{
+      marginTop: "10px",
+      backgroundColor: "#ffffff",
+      padding: "10px",
+      borderRadius: "6px",
+      border: "1px solid #e5e7eb",
+      maxHeight: "200px",
+      overflowY: "auto"
     }}>
-      {loadingHistorial ? (
-        <p style={{ fontSize: "12px", margin: 0 }}>Cargando...</p>
-      ) : historialSelected.length === 0 ? (
-        <p style={{ fontSize: "12px", margin: 0, color: "#666" }}>Sin registros.</p>
+      {historialSelected.length === 0 ? (
+        <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center" }}>No hay registros aún.</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {historialSelected.map((h, index) => (
-            <li key={index} style={{ fontSize: "12px", marginBottom: "5px", borderBottom: "1px solid #f3f4f6" }}>
-              <strong>{new Date(h.fecha_registro).toLocaleString()}</strong>: 
-              {h.tipo_accion === 'status_change' ? ` Estado -> ${h.valor_nuevo}` : ` Asignado`}
+            <li key={index} style={{
+              fontSize: "12px",
+              padding: "8px 0",
+              borderBottom: index !== historialSelected.length - 1 ? "1px solid #f3f4f6" : "none"
+            }}>
+              <div style={{ color: "#374151", fontWeight: "600" }}>
+                {h.tipo_accion === 'status_change'
+                  ? '🔄 Cambio de Estado'
+                  : h.tipo_accion === 'priority_change'
+                  ? '🎯 Cambio de Prioridad'
+                  : '👤 Asignación de Agente'}
+              </div>
+              <div style={{ color: "#4b5563" }}>
+                {h.tipo_accion === 'status_change' || h.tipo_accion === 'priority_change'
+                  ? `De "${h.valor_anterior}" a "${h.valor_nuevo}"`
+                  : `Asignado a Agente ID: ${h.valor_nuevo}`}
+              </div>
+              <div style={{ fontSize: "11px", color: "#9ca3af", marginTop: "2px" }}>
+                {new Date(new Date(h.fecha_registro + (h.fecha_registro.includes('Z') ? '' : 'Z')).getTime() - 5 * 60 * 60 * 1000).toLocaleString('es-ES', { hour12: false })} • Por Usuario ID: {h.usuario_accion_id}
+              </div>
             </li>
           ))}
         </ul>

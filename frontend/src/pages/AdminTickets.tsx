@@ -17,6 +17,8 @@ function AdminTickets() {
   const [historialSelected, setHistorialSelected] = useState<any[]>([]);
   const [showHistorialId, setShowHistorialId] = useState<number | null>(null);
   const [loadingHistorial, setLoadingHistorial] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+  const [filtroBusqueda, setFiltroBusqueda] = useState("");
   // --- LÓGICA HU-009: CÁLCULO DE SLA ---
   const obtenerEstadoSLA = (ticket: Ticket) => {
     const ahora = new Date().getTime();
@@ -59,13 +61,13 @@ function AdminTickets() {
   }, [navigate]);
 
   useEffect(() => {
-    if (user) {
+    if (user && !filtroBusqueda) {
       const interval = setInterval(() => {
         cargarDatos(false);
       }, 5000);
       return () => clearInterval(interval);
     }
-  }, [user]);
+  }, [user, filtroBusqueda]);
 
   const cargarDatos = async (mostrarLoading = false) => {
     try {
@@ -80,6 +82,23 @@ function AdminTickets() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const realizarBusqueda = async () => {
+    const q = busqueda.trim();
+    setFiltroBusqueda(q);
+    try {
+      const resultado = await ticketService.searchTickets(q);
+      setTickets(resultado);
+    } catch (err: any) {
+      console.error("Error buscando tickets:", err.message);
+    }
+  };
+
+  const limpiarBusqueda = async () => {
+    setBusqueda("");
+    setFiltroBusqueda("");
+    await cargarDatos();
   };
 
   const asignarTicket = async (ticketId: number, agentId: number) => {
@@ -172,6 +191,70 @@ function AdminTickets() {
         <h1>Gestión de Tickets</h1>
 
         <div className="card">
+          {/* BARRA DE BÚSQUEDA */}
+          <div style={{ display: "flex", gap: "10px", marginBottom: "16px", alignItems: "center" }}>
+            <input
+              type="text"
+              placeholder="Buscar por título o descripción..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && realizarBusqueda()}
+              style={{
+                flex: 1,
+                padding: "11px 16px",
+                border: "1px solid #d1d5db",
+                borderRadius: "4px",
+                fontSize: "14px",
+                color: "#1f2937",
+                backgroundColor: "white",
+                marginTop: "0",
+                boxSizing: "border-box"
+              }}
+            />
+            <button
+              onClick={realizarBusqueda}
+              style={{
+                backgroundColor: "#3b82f6",
+                color: "white",
+                padding: "8px 18px",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "14px",
+                fontWeight: "bold",
+                width: "auto",
+                marginTop: "0",
+                flexShrink: 0
+              }}
+            >
+              Buscar
+            </button>
+            {filtroBusqueda && (
+              <button
+                onClick={limpiarBusqueda}
+                style={{
+                  backgroundColor: "#e5e7eb",
+                  color: "#374151",
+                  padding: "8px 14px",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  width: "auto",
+                  marginTop: "0",
+                  flexShrink: 0
+                }}
+              >
+                ✕ Limpiar
+              </button>
+            )}
+          </div>
+          {filtroBusqueda && (
+            <p style={{ color: "#6b7280", fontSize: "13px", marginBottom: "12px" }}>
+              Resultados para: <strong>"{filtroBusqueda}"</strong> ({tickets.length} encontrado{tickets.length !== 1 ? "s" : ""})
+            </p>
+          )}
+
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
             <h3 style={{ margin: 0 }}>Filtrar por Estado</h3>
             <button
@@ -257,7 +340,9 @@ function AdminTickets() {
         ) : ticketsFiltraos.length === 0 ? (
           <div className="card">
             <p style={{ color: "#6b7280", textAlign: "center" }}>
-              No hay tickets para mostrar
+              {filtroBusqueda
+                ? `No se encontraron tickets con "${filtroBusqueda}"`
+                : "No hay tickets para mostrar"}
             </p>
           </div>
         ) : (
@@ -532,10 +617,14 @@ function AdminTickets() {
               borderBottom: index !== historialSelected.length - 1 ? "1px solid #f3f4f6" : "none" 
             }}>
               <div style={{ color: "#374151", fontWeight: "600" }}>
-                {h.tipo_accion === 'status_change' ? '🔄 Cambio de Estado' : '👤 Asignación de Agente'}
+                {h.tipo_accion === 'status_change'
+                  ? '🔄 Cambio de Estado'
+                  : h.tipo_accion === 'priority_change'
+                  ? '🎯 Cambio de Prioridad'
+                  : '👤 Asignación de Agente'}
               </div>
               <div style={{ color: "#4b5563" }}>
-                {h.tipo_accion === 'status_change' 
+                {h.tipo_accion === 'status_change' || h.tipo_accion === 'priority_change'
                   ? `De "${h.valor_anterior}" a "${h.valor_nuevo}"`
                   : `Asignado a Agente ID: ${h.valor_nuevo}`}
               </div>

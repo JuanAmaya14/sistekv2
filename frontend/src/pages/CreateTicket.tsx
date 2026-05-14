@@ -75,16 +75,6 @@ function CreateTicket() {
         />
 
         <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-          disabled={loading}
-        >
-          <option value="Alta">Alta</option>
-          <option value="Media">Media</option>
-          <option value="Baja">Baja</option>
-        </select>
-
-        <select 
           value={type}
           onChange={(e) => setType(e.target.value)}
           disabled={loading}

@@ -13,6 +13,7 @@ router.post('/', clientOnly, ticketController.createTicket);
 // Obtener tickets (HU-4)
 router.get('/', ticketController.getMyTickets);
 router.get('/all', adminOnly, ticketController.getAllTickets);
+router.get('/search', ticketController.searchTickets);
 router.get('/:id', ticketController.getTicketById);
 
 // Cambiar estado de ticket (HU-6) - agente o admin

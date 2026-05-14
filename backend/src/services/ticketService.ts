@@ -4,6 +4,21 @@ import { createNotification } from './notificationService';
 export const VALID_PRIORITIES = ['Alta', 'Media', 'Baja'] as const;
 export type Priority = typeof VALID_PRIORITIES[number];
 
+// Crea ticket_historia si no existe (tabla renombrada durante la migración)
+export const createTicketHistoriaTable = async () => {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ticket_historia (
+      id SERIAL PRIMARY KEY,
+      ticket_id INTEGER NOT NULL REFERENCES tickets(id) ON DELETE CASCADE,
+      usuario_accion_id INTEGER NOT NULL REFERENCES users(id),
+      tipo_accion VARCHAR(50) NOT NULL,
+      valor_anterior TEXT,
+      valor_nuevo TEXT,
+      fecha_registro TIMESTAMP DEFAULT NOW()
+    )
+  `);
+};
+
 export const migratePrioritiesToNewValues = async () => {
   await pool.query(`UPDATE tickets SET priority = 'Alta' WHERE priority IN ('alto', 'urgente')`);
   await pool.query(`UPDATE tickets SET priority = 'Media' WHERE priority = 'medio'`);
@@ -167,6 +182,51 @@ export const updateTicketPriority = async (ticketId: number, newPriority: string
 export const deleteTicket = async (ticketId: number) => {
   const result = await pool.query('DELETE FROM tickets WHERE id = $1 RETURNING *', [ticketId]);
   return result.rows[0];
+};
+
+// Buscar tickets por palabra clave en título o descripción
+export const searchTickets = async (keyword: string, userId: number, role: string) => {
+  const pattern = `%${keyword}%`;
+
+  if (role === 'administrador') {
+    const result = await pool.query(
+      `SELECT t.*, u.username as creator, a.username as assigned_agent
+       FROM tickets t
+       LEFT JOIN users u ON t.user_id = u.id
+       LEFT JOIN users a ON t.assigned_agent_id = a.id
+       WHERE (t.title ILIKE $1 OR t.description ILIKE $1)
+       ORDER BY t.created_at DESC`,
+      [pattern]
+    );
+    return result.rows;
+  }
+
+  if (role === 'agente') {
+    const result = await pool.query(
+      `SELECT t.*, u.username as creator, a.username as assigned_agent
+       FROM tickets t
+       LEFT JOIN users u ON t.user_id = u.id
+       LEFT JOIN users a ON t.assigned_agent_id = a.id
+       WHERE t.assigned_agent_id = $1
+         AND (t.title ILIKE $2 OR t.description ILIKE $2)
+       ORDER BY t.created_at DESC`,
+      [userId, pattern]
+    );
+    return result.rows;
+  }
+
+  // cliente
+  const result = await pool.query(
+    `SELECT t.*, u.username as creator, a.username as assigned_agent
+     FROM tickets t
+     LEFT JOIN users u ON t.user_id = u.id
+     LEFT JOIN users a ON t.assigned_agent_id = a.id
+     WHERE t.user_id = $1
+       AND (t.title ILIKE $2 OR t.description ILIKE $2)
+     ORDER BY t.created_at DESC`,
+    [userId, pattern]
+  );
+  return result.rows;
 };
 
 // Obtener historial de cambios (HU-7)

@@ -6,13 +6,13 @@ import { VALID_PRIORITIES } from '../services/ticketService';
 // Crear ticket (HU-3)
 export const createTicket = async (req: Request, res: Response) => {
   try {
-    const { title, description, priority, type } = req.body;
+    const { title, description, type } = req.body;
     const userId = req.userId!;
     const userRole = req.userRole!;
 
-    if (!title || !description || !priority || !type) {
-      return res.status(400).json({ 
-        error: 'Campos requeridos: title, description, priority, type' 
+    if (!title || !description || !type) {
+      return res.status(400).json({
+        error: 'Campos requeridos: title, description, type'
       });
     }
 
@@ -21,6 +21,8 @@ export const createTicket = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Solo los clientes pueden crear tickets' });
     }
 
+    // La prioridad la asigna el sistema; el cliente no puede elegirla
+    const priority = 'Media';
     const newTicket = await ticketService.createTicket(title, description, priority, type, userId);
     res.status(201).json(newTicket);
   } catch (error: any) {
@@ -204,6 +206,32 @@ export const updateTicketPriority = async (req: Request, res: Response) => {
     res.json(updatedTicket);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
+  }
+};
+
+// Buscar tickets por palabra clave (título o descripción)
+export const searchTickets = async (req: Request, res: Response) => {
+  try {
+    const { q } = req.query;
+    const userId = req.userId!;
+    const userRole = req.userRole!;
+
+    if (!q || typeof q !== 'string' || !q.trim()) {
+      let tickets;
+      if (userRole === 'cliente') {
+        tickets = await ticketService.getUserTickets(userId);
+      } else if (userRole === 'agente') {
+        tickets = await ticketService.getAgentTickets(userId);
+      } else {
+        tickets = await ticketService.getAllTickets();
+      }
+      return res.json(tickets);
+    }
+
+    const tickets = await ticketService.searchTickets(q.trim(), userId, userRole);
+    res.json(tickets);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Error al buscar tickets: ' + error.message });
   }
 };
 

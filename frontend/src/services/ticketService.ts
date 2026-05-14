@@ -26,12 +26,12 @@ export interface Ticket {
 export interface TicketHistory {
   id: number;
   ticket_id: number;
-  changed_by: number;
-  changed_by_user?: string;
-  old_status: string | null;
-  new_status: string | null;
-  change_type: 'status_change' | 'agent_assignment';
-  changed_at: string;
+  usuario_accion_id: number;
+  nombre_usuario?: string;
+  tipo_accion: string;
+  valor_anterior: string | null;
+  valor_nuevo: string | null;
+  fecha_registro: string;
 }
 
 export const ticketService = {
@@ -134,6 +134,18 @@ export const ticketService = {
       const error = await response.json();
       throw new Error(error.error);
     }
+    return response.json();
+  },
+
+  // Buscar tickets por palabra clave en título o descripción
+  async searchTickets(query: string): Promise<Ticket[]> {
+    const url = query.trim()
+      ? `${API_URL}/tickets/search?q=${encodeURIComponent(query.trim())}`
+      : `${API_URL}/tickets/search`;
+    const response = await fetch(url, {
+      headers: authService.getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('Error al buscar tickets');
     return response.json();
   },
 

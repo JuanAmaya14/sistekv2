@@ -8,7 +8,7 @@ import userRoutes from './routes/userRoutes';
 import ticketRoutes from './routes/ticketRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import { createNotificationsTable } from './services/notificationService';
-import { migratePrioritiesToNewValues } from './services/ticketService';
+import { migratePrioritiesToNewValues, createTicketHistoriaTable } from './services/ticketService';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -43,6 +43,10 @@ app.use('/api/notifications', notificationRoutes);
 createNotificationsTable()
   .then(() => console.log('✅ Tabla notifications lista'))
   .catch((err) => console.error('❌ Error creando tabla notifications:', err));
+
+createTicketHistoriaTable()
+  .then(() => console.log('✅ Tabla ticket_historia lista'))
+  .catch((err) => console.error('❌ Error creando tabla ticket_historia:', err));
 
 migratePrioritiesToNewValues()
   .then(() => console.log('✅ Prioridades migradas a Alta/Media/Baja'))

@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { notificationService, Notification } from '../services/notificationService';
 
 const PRIORITY_COLORS: Record<string, string> = {
-  urgente: '#ef4444',
-  alto: '#f97316',
-  medio: '#f59e0b',
-  bajo: '#22c55e',
+  Alta: '#ef4444',
+  Media: '#f59e0b',
+  Baja: '#22c55e',
 };
 
 function NotificationBell() {
@@ -58,7 +57,7 @@ function NotificationBell() {
   };
 
   const priorityColor = (priority: string) =>
-    PRIORITY_COLORS[priority?.toLowerCase()] ?? '#6b7280';
+    PRIORITY_COLORS[priority] ?? '#6b7280';
 
   return (
     <div ref={dropdownRef} style={{ position: 'relative' }}>
