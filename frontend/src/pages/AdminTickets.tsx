@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ticketService, Ticket, PRIORIDADES, PrioridadTicket, PRIORIDAD_ORDEN } from "../services/ticketService";
+import { commentService, Comment } from "../services/commentService";
 import { authService } from "../services/authService";
 import "../styles.css";
 
@@ -19,6 +20,14 @@ function AdminTickets() {
   const [loadingHistorial, setLoadingHistorial] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [filtroBusqueda, setFiltroBusqueda] = useState("");
+
+  // ESTADOS DE COMENTARIOS
+  const [showCommentsId, setShowCommentsId] = useState<number | null>(null);
+  const [comentarios, setComentarios] = useState<Comment[]>([]);
+  const [loadingComentarios, setLoadingComentarios] = useState(false);
+  const [nuevoComentario, setNuevoComentario] = useState<{ [key: number]: string }>({});
+  const [errorComentario, setErrorComentario] = useState<{ [key: number]: string }>({});
+  const [enviandoComentario, setEnviandoComentario] = useState(false);
   // --- LÓGICA HU-009: CÁLCULO DE SLA ---
   const obtenerEstadoSLA = (ticket: Ticket) => {
     const ahora = new Date().getTime();
@@ -156,6 +165,53 @@ function AdminTickets() {
   }
 };
 
+  const verComentarios = async (ticketId: number) => {
+    if (showCommentsId === ticketId) {
+      setShowCommentsId(null);
+      return;
+    }
+    try {
+      setLoadingComentarios(true);
+      const data = await commentService.getComments(ticketId);
+      setComentarios(data);
+      setShowCommentsId(ticketId);
+    } catch (err) {
+      console.error("Error al cargar comentarios");
+    } finally {
+      setLoadingComentarios(false);
+    }
+  };
+
+  const enviarComentario = async (ticketId: number) => {
+    const content = nuevoComentario[ticketId]?.trim();
+    if (!content) {
+      setErrorComentario(prev => ({ ...prev, [ticketId]: 'El comentario no puede estar vacío' }));
+      return;
+    }
+    try {
+      setEnviandoComentario(true);
+      setErrorComentario(prev => ({ ...prev, [ticketId]: '' }));
+      await commentService.createComment(ticketId, content);
+      setNuevoComentario(prev => ({ ...prev, [ticketId]: '' }));
+      const data = await commentService.getComments(ticketId);
+      setComentarios(data);
+    } catch (err: any) {
+      setErrorComentario(prev => ({ ...prev, [ticketId]: err.message }));
+    } finally {
+      setEnviandoComentario(false);
+    }
+  };
+
+  const eliminarTicket = async (ticketId: number) => {
+    if (!window.confirm(`¿Seguro que deseas eliminar el ticket #${ticketId}? Esta acción no se puede deshacer.`)) return;
+    try {
+      await ticketService.deleteTicket(ticketId);
+      cargarDatos();
+    } catch (err: any) {
+      alert("Error al eliminar ticket: " + err.message);
+    }
+  };
+
   const cambiarPrioridad = async (ticketId: number, newPriority: PrioridadTicket) => {
     try {
       await ticketService.updateTicketPriority(ticketId, newPriority);
@@ -184,6 +240,7 @@ function AdminTickets() {
         <button onClick={() => navigate("/admin-tickets")} style={{ backgroundColor: "#3b82f6", color: "white" }}>
           Todos los Tickets
         </button>
+        <button onClick={() => navigate("/reports")}>Reportes</button>
         <button onClick={logout}>Cerrar sesión</button>
       </div>
 
@@ -572,13 +629,19 @@ function AdminTickets() {
                     </div>
                   )}
 
-                  <div style={{ fontSize: "12px", color: "#6b7280", display: "flex", justifyContent: "space-between" }}>
+                  <div style={{ fontSize: "12px", color: "#6b7280", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span>Creado: {new Date(ticket.created_at).toLocaleString()}</span>
                     <span>Cliente ID: {ticket.user_id}</span>
+                    <button
+                      onClick={() => eliminarTicket(ticket.id)}
+                      style={{ backgroundColor: "#ef4444", color: "white", padding: "4px 12px", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontWeight: "bold" }}
+                    >
+                      Eliminar
+                    </button>
                   </div>
                   {/* --- BOTÓN Y VISTA DE HISTORIAL (HU-007) --- */}
 <div style={{ marginTop: "15px", borderTop: "1px dashed #ccc", paddingTop: "10px" }}>
-  <button 
+  <button
     onClick={() => verHistorial(ticket.id)}
     style={{
       background: "none",
@@ -597,24 +660,24 @@ function AdminTickets() {
   </button>
 
   {showHistorialId === ticket.id && (
-    <div style={{ 
-      marginTop: "10px", 
-      backgroundColor: "#ffffff", 
-      padding: "10px", 
-      borderRadius: "6px", 
+    <div style={{
+      marginTop: "10px",
+      backgroundColor: "#ffffff",
+      padding: "10px",
+      borderRadius: "6px",
       border: "1px solid #e5e7eb",
       maxHeight: "200px",
-      overflowY: "auto" 
+      overflowY: "auto"
     }}>
       {historialSelected.length === 0 ? (
         <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center" }}>No hay registros aún.</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {historialSelected.map((h, index) => (
-            <li key={index} style={{ 
-              fontSize: "12px", 
-              padding: "8px 0", 
-              borderBottom: index !== historialSelected.length - 1 ? "1px solid #f3f4f6" : "none" 
+            <li key={index} style={{
+              fontSize: "12px",
+              padding: "8px 0",
+              borderBottom: index !== historialSelected.length - 1 ? "1px solid #f3f4f6" : "none"
             }}>
               <div style={{ color: "#374151", fontWeight: "600" }}>
                 {h.tipo_accion === 'status_change'
@@ -638,6 +701,58 @@ function AdminTickets() {
     </div>
   )}
 </div>
+
+                  {/* --- SECCIÓN DE COMENTARIOS (ADMIN) --- */}
+                  <div style={{ marginTop: "10px", borderTop: "1px dashed #d1d5db", paddingTop: "10px" }}>
+                    <button
+                      onClick={() => verComentarios(ticket.id)}
+                      style={{ background: "none", border: "none", color: "#7c3aed", fontSize: "13px", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", gap: "5px", padding: "0" }}
+                    >
+                      {showCommentsId === ticket.id ? "▲ Ocultar Comentarios" : "▼ Ver Comentarios"}
+                      {loadingComentarios && showCommentsId === ticket.id && " (Cargando...)"}
+                    </button>
+
+                    {showCommentsId === ticket.id && (
+                      <div style={{ marginTop: "10px", backgroundColor: "#fff", padding: "12px", borderRadius: "6px", border: "1px solid #e5e7eb" }}>
+                        {comentarios.length === 0 ? (
+                          <p style={{ fontSize: "12px", color: "#6b7280", textAlign: "center", margin: "0 0 10px 0" }}>Sin comentarios aún.</p>
+                        ) : (
+                          <div style={{ marginBottom: "12px", maxHeight: "220px", overflowY: "auto" }}>
+                            {comentarios.map((c) => (
+                              <div key={c.id} style={{ padding: "8px 0", borderBottom: "1px solid #f3f4f6" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
+                                  <span style={{ fontSize: "12px", fontWeight: "bold", color: "#374151" }}>{c.autor}</span>
+                                  <span style={{ fontSize: "11px", color: "#9ca3af" }}>
+                                    {new Date(c.created_at).toLocaleString('es-ES', { hour12: false })}
+                                  </span>
+                                </div>
+                                <p style={{ margin: "0", fontSize: "13px", color: "#4b5563" }}>{c.content}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div>
+                          {errorComentario[ticket.id] && (
+                            <p style={{ fontSize: "12px", color: "#ef4444", margin: "0 0 4px 0" }}>{errorComentario[ticket.id]}</p>
+                          )}
+                          <textarea
+                            value={nuevoComentario[ticket.id] || ""}
+                            onChange={(e) => setNuevoComentario(prev => ({ ...prev, [ticket.id]: e.target.value }))}
+                            placeholder="Escribe un comentario..."
+                            style={{ width: "100%", padding: "8px", border: "1px solid #d1d5db", borderRadius: "4px", fontSize: "13px", resize: "vertical", minHeight: "60px", boxSizing: "border-box" }}
+                          />
+                          <button
+                            onClick={() => enviarComentario(ticket.id)}
+                            disabled={enviandoComentario}
+                            style={{ marginTop: "6px", backgroundColor: "#7c3aed", color: "white", padding: "6px 16px", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "13px", fontWeight: "bold" }}
+                          >
+                            {enviandoComentario ? "Enviando..." : "Comentar"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                 </div>
               );
 })}

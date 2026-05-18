@@ -99,7 +99,10 @@ function Dashboard() {
         )}
 
         {user.role === "administrador" && (
-          <button onClick={() => navigate("/admin-tickets")}>Todos los Tickets</button>
+          <>
+            <button onClick={() => navigate("/admin-tickets")}>Todos los Tickets</button>
+            <button onClick={() => navigate("/reports")}>Reportes</button>
+          </>
         )}
 
         <button onClick={logout}>Cerrar sesión</button>

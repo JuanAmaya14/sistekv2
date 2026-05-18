@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as ticketController from '../controllers/ticketController';
+import * as commentController from '../controllers/commentController';
 import { authMiddleware, adminOnly, clientOnly, agentOnly } from '../middlewares/authMiddleware';
 
 const router = Router();
@@ -30,5 +31,9 @@ router.get('/:id/history', ticketController.getTicketHistory);
 
 // Eliminar ticket - solo admin
 router.delete('/:id', adminOnly, ticketController.deleteTicket);
+
+// Comentarios de un ticket
+router.get('/:id/comments', commentController.getComments);
+router.post('/:id/comments', commentController.createComment);
 
 export default router;
