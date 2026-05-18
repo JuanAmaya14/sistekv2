@@ -1,46 +1,157 @@
 # Ticket System
 
-Estructura inicial del proyecto para un sistema de tickets.
+Sistema de gestión de tickets con reportes y comentarios.
 
-## Organización
+## 📋 Organización del Proyecto
 
-- `/ticket-system/frontend` - Interfaz de usuario
-- `/ticket-system/backend` - Lógica del servidor
-- `/ticket-system/database` - Esquema y datos iniciales
+```
+├── backend/          - API REST con Express.js + TypeScript
+├── frontend/         - Interfaz con React + Vite + TypeScript
+└── database/         - Esquema y datos iniciales PostgreSQL
+```
 
-## Cómo usar
+## 🛠️ Tecnologías
 
-Coloca los archivos y código específicos en cada carpeta según la arquitectura.
-
-
-# Tecnologías del proyecto de sistema de tickets
-
-Frontend:
+### Frontend
+- React 18
 - TypeScript
-- React
-- Tailwind CSS
-- CSS
 - Vite
+- Tailwind CSS
 
-Backend:
+### Backend
 - Node.js
 - Express.js
 - TypeScript
-
-Base de datos:
 - PostgreSQL
+- JWT Authentication
 
-Autenticación:
-- JWT (JSON Web Tokens)
+## 🚀 Guía de Instalación y Ejecución
 
-Herramientas de desarrollo:
-- Visual Studio Code
-- npm (Node Package Manager)
+### Requisitos Previos
+- Node.js (v16 o superior)
+- npm o yarn
+- PostgreSQL (local o remoto)
 - Git
-- GitHub
 
-Pruebas:
-- Postman
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/sebastiangonzalez041-a11y/sistek.git
+cd sistek
+```
+
+### 2. Configurar el Backend
+
+#### a. Instalar dependencias
+```bash
+cd backend
+npm install
+```
+
+#### b. Configurar variables de entorno
+Copia el archivo `.env.example` a `.env` y configura tus datos:
+```bash
+cp .env.example .env
+```
+
+Edita el archivo `.env` con tus credenciales:
+```
+DATABASE_URL=postgresql://usuario:contraseña@localhost:5432/sistek_db
+PORT=4000
+NODE_ENV=development
+JWT_SECRET=tu_clave_secreta_aqui
+JWT_EXPIRES_IN=7d
+```
+
+#### c. Configurar la base de datos
+```bash
+# Crear la base de datos (si no existe)
+createdb sistek_db
+
+# Ejecutar el esquema
+psql sistek_db < ../database/schema.sql
+
+# Cargar datos iniciales (opcional)
+psql sistek_db < ../database/seeds/initial_data.sql
+```
+
+#### d. Ejecutar el servidor
+```bash
+npm run dev
+```
+El backend estará disponible en `http://localhost:4000`
+
+### 3. Configurar el Frontend
+
+#### a. Instalar dependencias
+```bash
+cd ../frontend
+npm install
+```
+
+#### b. Ejecutar el servidor de desarrollo
+```bash
+npm run dev
+```
+El frontend estará disponible en `http://localhost:5173`
+
+## 📝 Scripts Disponibles
+
+### Backend
+```bash
+npm run dev      # Ejecutar en modo desarrollo
+npm run build    # Compilar TypeScript
+npm run start    # Ejecutar versión compilada
+```
+
+### Frontend
+```bash
+npm run dev      # Servidor de desarrollo
+npm run build    # Construir para producción
+npm run preview  # Previsualizar build de producción
+```
+
+## 🔐 Autenticación
+
+El sistema usa JWT (JSON Web Tokens) para autenticación. Los tokens se validan en rutas protegidas mediante el middleware `authMiddleware`.
+
+## 📚 Endpoints principales
+
+### Usuarios
+- `POST /api/users/register` - Registrar nuevo usuario
+- `POST /api/users/login` - Iniciar sesión
+
+### Tickets
+- `GET /api/tickets` - Listar tickets
+- `POST /api/tickets` - Crear nuevo ticket
+- `GET /api/tickets/:id` - Obtener ticket específico
+- `PUT /api/tickets/:id` - Actualizar ticket
+- `DELETE /api/tickets/:id` - Eliminar ticket
+
+### Comentarios
+- `POST /api/comments` - Crear comentario
+- `GET /api/comments/:ticketId` - Obtener comentarios de un ticket
+
+### Reportes
+- `GET /api/reports` - Obtener reportes
+- `POST /api/reports` - Crear reporte
+
+### Notificaciones
+- `GET /api/notifications` - Obtener notificaciones
+
+## 🐛 Solución de Problemas
+
+### Error de conexión a BD
+- Verifica que PostgreSQL esté corriendo
+- Comprueba las credenciales en `.env`
+- Asegúrate de que la base de datos existe
+
+### Puerto ya en uso
+- Backend: Cambia `PORT` en `.env`
+- Frontend: Vite usa puerto 5173 por defecto
+
+## 📧 Contacto
+
+Para más información, contacta al equipo de desarrollo.
 
 ## Configuración de Desarrollo
 
