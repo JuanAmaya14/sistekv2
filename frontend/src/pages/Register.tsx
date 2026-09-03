@@ -4,7 +4,6 @@ import { authService } from "../services/authService";
 import "../styles.css";
 
 function Register() {
-
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -14,9 +13,14 @@ function Register() {
   const navigate = useNavigate();
 
   const handleRegister = async () => {
-
     if (!username || !email || !password) {
       setError("Todos los campos son obligatorios");
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!emailRegex.test(email)) {
+      setError("Por favor, ingresa un correo electrónico válido");
       return;
     }
 
@@ -36,7 +40,6 @@ function Register() {
 
   return (
     <div className="auth-container">
-
       {/* IZQUIERDA */}
       <div className="left-panel">
         <h1>Únete a Sistek</h1>
@@ -46,10 +49,9 @@ function Register() {
       {/* DERECHA */}
       <div className="right-panel">
         <div className="form-box">
-
           <h2>Registro</h2>
 
-          {error && <p style={{ color: 'red' }}>{error}</p>}
+          {error && <p style={{ color: "red" }}>{error}</p>}
 
           <input
             placeholder="Nombre de usuario"
@@ -80,14 +82,15 @@ function Register() {
 
           <p className="link">
             ¿Ya tienes cuenta?{" "}
-            <span onClick={() => navigate("/")} style={{color:"#2563eb", cursor:"pointer"}}>
+            <span
+              onClick={() => navigate("/")}
+              style={{ color: "#2563eb", cursor: "pointer" }}
+            >
               Inicia sesión
             </span>
           </p>
-
         </div>
       </div>
-
     </div>
   );
 }
