@@ -1,0 +1,62 @@
+services:
+  postgres_db:
+    image: postgres:15-alpine
+    container_name: postgres_container
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=sistek_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - sistek_network
+    # 🌟 NUEVO: Docker monitorea activamente cuándo la BD está realmente lista
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d sistek_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: backend_container
+    restart: always
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/dist
+      - backend_uploads:/app/uploads
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:admin@postgres_db:5432/sistek_db
+    # 🌟 MODIFICADO: Ahora espera explícitamente a que el healthcheck sea exitoso
+    depends_on:
+      postgres_db:
+        condition: service_healthy
+    networks:
+      - sistek_network
+
+  frontend:
+    build: ./frontend
+    container_name: frontend_container
+    restart: always
+    ports:
+      - "3000:80" # <-- Mapeamos tu puerto 3000 al puerto 80 de Nginx
+    depends_on:
+      - backend
+    networks:
+      - sistek_network
+
+volumes:
+  backend_uploads:
+  postgres_data:
+
+networks:
+  sistek_network:
+    driver: bridge
