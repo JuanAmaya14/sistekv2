@@ -2,13 +2,24 @@ import { Request, Response } from 'express';
 import * as ticketService from '../services/ticketService';
 import * as userService from '../services/userService';
 import { VALID_PRIORITIES } from '../services/ticketService';
+import { checkTicketAccess, parseId } from '../middlewares/ticketAccess';
+import { sanitizeText } from '../utils/validators';
+
+const MAX_TITLE = 255;
+const MAX_DESCRIPTION = 5000;
+const MAX_TYPE = 100;
+const MAX_MOTIVO = 1000;
 
 // Crear ticket (HU-3)
 export const createTicket = async (req: Request, res: Response) => {
   try {
-    const { title, description, type } = req.body;
     const userId = req.userId!;
     const userRole = req.userRole!;
+
+    // Se limita el largo y se limpian caracteres de control de la entrada libre
+    const title = sanitizeText(req.body.title, MAX_TITLE);
+    const description = sanitizeText(req.body.description, MAX_DESCRIPTION);
+    const type = sanitizeText(req.body.type, MAX_TYPE);
 
     if (!title || !description || !type) {
       return res.status(400).json({
@@ -26,7 +37,8 @@ export const createTicket = async (req: Request, res: Response) => {
     const newTicket = await ticketService.createTicket(title, description, priority, type, userId);
     res.status(201).json(newTicket);
   } catch (error: any) {
-    res.status(500).json({ error: 'Error al crear ticket: ' + error.message });
+    console.error('Error en createTicket:', error.message);
+    res.status(500).json({ error: 'Error al crear ticket' });
   }
 };
 
@@ -42,7 +54,8 @@ export const getAllTickets = async (req: Request, res: Response) => {
     const tickets = await ticketService.getAllTickets();
     res.json(tickets);
   } catch (error: any) {
-    res.status(500).json({ error: 'Error al obtener tickets: ' + error.message });
+    console.error('Error al obtener tickets:', error.message);
+    res.status(500).json({ error: 'Error al obtener tickets' });
   }
 };
 
@@ -69,23 +82,28 @@ export const getMyTickets = async (req: Request, res: Response) => {
 
     res.json(tickets);
   } catch (error: any) {
-    res.status(500).json({ error: 'Error al obtener tickets: ' + error.message });
+    console.error('Error al obtener tickets:', error.message);
+    res.status(500).json({ error: 'Error al obtener tickets' });
   }
 };
 
-// Obtener un ticket por ID
+// Obtener un ticket por ID — solo si el usuario tiene acceso a ese ticket
 export const getTicketById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const ticket = await ticketService.getTicketById(parseInt(id));
-
-    if (!ticket) {
-      return res.status(404).json({ error: 'Ticket no encontrado' });
+    const ticketId = parseId(req.params.id);
+    if (ticketId === null) {
+      return res.status(400).json({ error: 'ID de ticket inválido' });
     }
 
-    res.json(ticket);
+    const access = await checkTicketAccess(ticketId, req.userId!, req.userRole!);
+    if (!access.allowed) {
+      return res.status(access.status).json({ error: access.error });
+    }
+
+    res.json(access.ticket);
   } catch (error: any) {
-    res.status(500).json({ error: 'Error al obtener ticket: ' + error.message });
+    console.error('Error en getTicketById:', error.message);
+    res.status(500).json({ error: 'Error al obtener ticket' });
   }
 };
 
@@ -99,6 +117,14 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
 
     if (!status) {
       return res.status(400).json({ error: 'Status es requerido' });
+    }
+
+    // Lista blanca de estados: evita escribir valores arbitrarios en la BD
+    const VALID_STATUSES = ['Abierto', 'En progreso', 'Cerrado'];
+    if (!VALID_STATUSES.includes(status)) {
+      return res.status(400).json({
+        error: `Estado inválido. Valores permitidos: ${VALID_STATUSES.join(', ')}`
+      });
     }
 
     const ticket = await ticketService.getTicketById(parseInt(id));
@@ -150,26 +176,21 @@ export const assignTicketToAgent = async (req: Request, res: Response) => {
 // Obtener historial de un ticket (HU-7)
 export const getTicketHistory = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const userId = req.userId!;
-    const userRole = req.userRole!;
-
-    const ticket = await ticketService.getTicketById(parseInt(id));
-    if (!ticket) {
-      return res.status(404).json({ error: 'Ticket no encontrado' });
+    const ticketId = parseId(req.params.id);
+    if (ticketId === null) {
+      return res.status(400).json({ error: 'ID de ticket inválido' });
     }
 
-    // Validar permisos de visualización
-    if (userRole === 'cliente' && ticket.user_id !== userId) {
-      return res.status(403).json({ error: 'No puedes ver el historial de este ticket' });
-    } else if (userRole === 'agente' && ticket.assigned_agent_id !== userId) {
-      return res.status(403).json({ error: 'No puedes ver el historial de este ticket' });
+    const access = await checkTicketAccess(ticketId, req.userId!, req.userRole!);
+    if (!access.allowed) {
+      return res.status(access.status).json({ error: access.error });
     }
 
-    const history = await ticketService.getTicketHistory(parseInt(id));
+    const history = await ticketService.getTicketHistory(ticketId);
     res.json(history);
   } catch (error: any) {
-    res.status(500).json({ error: 'Error al obtener historial: ' + error.message });
+    console.error('Error en getTicketHistory:', error.message);
+    res.status(500).json({ error: 'Error al obtener historial' });
   }
 };
 
@@ -231,27 +252,32 @@ export const searchTickets = async (req: Request, res: Response) => {
     const tickets = await ticketService.searchTickets(q.trim(), userId, userRole);
     res.json(tickets);
   } catch (error: any) {
-    res.status(500).json({ error: 'Error al buscar tickets: ' + error.message });
+    console.error('Error al buscar tickets:', error.message);
+    res.status(500).json({ error: 'Error al buscar tickets' });
   }
 };
 
 // Reabrir ticket (HU-019)
 export const reopenTicket = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const { motivo } = req.body;
+    const ticketId = parseId(req.params.id);
+    if (ticketId === null) {
+      return res.status(400).json({ error: 'ID de ticket inválido' });
+    }
+
     const userId = req.userId!;
     const userRole = req.userRole!;
+    const motivo = sanitizeText(req.body.motivo, MAX_MOTIVO);
 
-    if (!motivo || !motivo.trim()) {
+    if (!motivo) {
       return res.status(400).json({ error: 'El motivo de reapertura es obligatorio' });
     }
 
     const updatedTicket = await ticketService.reopenTicket(
-      parseInt(id),
+      ticketId,
       userId,
       userRole,
-      motivo.trim()
+      motivo
     );
     res.json(updatedTicket);
   } catch (error: any) {
@@ -276,6 +302,7 @@ export const deleteTicket = async (req: Request, res: Response) => {
 
     res.json({ message: 'Ticket eliminado' });
   } catch (error: any) {
-    res.status(500).json({ error: 'Error al eliminar ticket: ' + error.message });
+    console.error('Error al eliminar ticket:', error.message);
+    res.status(500).json({ error: 'Error al eliminar ticket' });
   }
 };

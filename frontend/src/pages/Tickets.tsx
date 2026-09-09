@@ -735,7 +735,6 @@ const verHistorial = async (ticketId: number) => {
                                   onClick={() => enviarRating(ticket.id)}
                                   disabled={enviandoRating || !ratingPuntuacion[ticket.id]}
                                   style={{
-                                    marginTop: "8px",
                                     background: (enviandoRating || !ratingPuntuacion[ticket.id])
                                       ? "#94a3b8"
                                       : "linear-gradient(135deg,#f59e0b,#d97706)",
@@ -814,7 +813,6 @@ const verHistorial = async (ticketId: number) => {
                               onClick={() => enviarComentario(ticket.id)}
                               disabled={enviandoComentario}
                               style={{
-                                marginTop: "6px",
                                 background: "linear-gradient(135deg,#7c3aed,#6366f1)",
                                 color: "white", padding: "6px 16px",
                                 border: "none", borderRadius: "6px",
@@ -1307,7 +1305,6 @@ const verHistorial = async (ticketId: number) => {
                               onClick={() => enviarComentario(ticket.id)}
                               disabled={enviandoComentario}
                               style={{
-                                marginTop: "6px",
                                 background: "linear-gradient(135deg,#7c3aed,#6366f1)",
                                 color: "white", padding: "6px 16px",
                                 border: "none", borderRadius: "6px",

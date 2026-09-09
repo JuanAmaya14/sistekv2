@@ -299,6 +299,8 @@ function AdminTickets() {
         <button className="sidebar-nav-btn" onClick={() => navigate("/dashboard")}>🏠 Inicio</button>
         <button className="sidebar-nav-btn sidebar-nav-active" onClick={() => navigate("/admin-tickets")}>🎫 Todos los Tickets</button>
         <button className="sidebar-nav-btn" onClick={() => navigate("/reports")}>📊 Reportes</button>
+        <button className="sidebar-nav-btn" onClick={() => navigate("/configuracion")}>⚙️ Configuración</button>
+
         <button className="sidebar-nav-btn sidebar-theme-btn" onClick={toggleTheme}>
           {theme === "dark" ? "☀️ Modo Claro" : "🌙 Modo Oscuro"}
         </button>

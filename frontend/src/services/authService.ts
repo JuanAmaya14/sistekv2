@@ -86,12 +86,13 @@ export const authService = {
       tokenRefreshInterval = null;
     }
   },
-  // Registrar usuario
-  async register(username: string, email: string, password: string, role: string = 'cliente'): Promise<AuthResponse> {
+  // Registrar usuario. El rol lo decide el backend (siempre 'cliente'):
+  // enviarlo desde el navegador permitiría auto-asignarse permisos de administrador.
+  async register(username: string, email: string, password: string): Promise<AuthResponse> {
     const response = await fetch(`${API_URL}/users/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password, role })
+      body: JSON.stringify({ username, email, password })
     });
     
     if (!response.ok) {
@@ -176,6 +177,42 @@ export const authService = {
     
     if (!response.ok) throw new Error('Error fetching profile');
     return response.json();
+  },
+
+  // Cambiar la contraseña (requiere la contraseña actual)
+  async changePassword(currentPassword: string, newPassword: string): Promise<{ message: string }> {
+    const response = await fetch(`${API_URL}/users/change-password`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || 'No se pudo cambiar la contraseña');
+    }
+    return data;
+  },
+
+  // Actualizar el nombre de usuario del perfil
+  async updateProfile(username: string): Promise<User> {
+    const response = await fetch(`${API_URL}/users/profile`, {
+      method: 'PUT',
+      headers: this.getAuthHeaders(),
+      body: JSON.stringify({ username }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || 'No se pudo actualizar el perfil');
+    }
+
+    // Mantener sincronizado el usuario guardado en el navegador
+    const current = this.getCurrentUser();
+    if (current) {
+      localStorage.setItem('user', JSON.stringify({ ...current, ...data.user }));
+    }
+    return data.user;
   },
 
   // Obtener todos los usuarios (solo admin)

@@ -115,6 +115,8 @@ function Dashboard() {
           </>
         )}
 
+        <button className="sidebar-nav-btn" onClick={() => navigate("/configuracion")}>⚙️ Configuración</button>
+
         <button className="sidebar-nav-btn sidebar-theme-btn" onClick={toggleTheme}>
           {theme === "dark" ? "☀️ Modo Claro" : "🌙 Modo Oscuro"}
         </button>

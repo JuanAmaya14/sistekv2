@@ -1,6 +1,14 @@
 import pool from '../config/database';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET, JWT_EXPIRES_IN } from '../config/env';
+import { normalizeEmail } from '../utils/validators';
+
+const BCRYPT_ROUNDS = 12;
+
+// Hash de referencia para igualar el tiempo de respuesta cuando el usuario no existe
+// (evita distinguir "correo inexistente" de "contraseña incorrecta" por el tiempo).
+const DUMMY_HASH = '$2a$12$C6UzMDM.H6dfI/f/IKcEe.HTgL7Tz1sYtvrjT2vsvGSQhKvUJ1jJa';
 
 // Obtener todos los usuarios
 export const getAllUsers = async () => {
@@ -8,9 +16,11 @@ export const getAllUsers = async () => {
   return result.rows;
 };
 
-// Obtener usuario por email
+// Obtener usuario por email (siempre normalizado a minúsculas)
 export const getUserByEmail = async (email: string) => {
-  const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+  const result = await pool.query('SELECT * FROM users WHERE LOWER(email) = $1', [
+    normalizeEmail(email),
+  ]);
   return result.rows[0];
 };
 
@@ -28,16 +38,12 @@ export const getUserById = async (id: number) => {
 
 // Crear usuario (con hash de contraseña)
 export const createUser = async (username: string, email: string, password: string, role: string = 'cliente') => {
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role',
-      [username, email, hashedPassword, role]
-    );
-    return result.rows[0];
-  } catch (error: any) {
-    throw error;
-  }
+  const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
+  const result = await pool.query(
+    'INSERT INTO users (username, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, username, email, role',
+    [username.trim(), normalizeEmail(email), hashedPassword, role]
+  );
+  return result.rows[0];
 };
 
 // Validar contraseña
@@ -45,14 +51,40 @@ export const validatePassword = async (inputPassword: string, hashedPassword: st
   return await bcrypt.compare(inputPassword, hashedPassword);
 };
 
+// Comparación señuelo: consume el mismo tiempo que una verificación real
+export const fakePasswordCheck = async (): Promise<void> => {
+  await bcrypt.compare('dummy-password', DUMMY_HASH);
+};
+
+// Obtener el hash de contraseña de un usuario (uso interno, nunca se expone por la API)
+export const getPasswordHashById = async (id: number): Promise<string | null> => {
+  const result = await pool.query('SELECT password FROM users WHERE id = $1', [id]);
+  return result.rows[0]?.password ?? null;
+};
+
+// Actualizar la contraseña de un usuario ya autenticado
+export const updatePassword = async (id: number, newPassword: string): Promise<void> => {
+  const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+  await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, id]);
+};
+
+// Actualizar el nombre de usuario (el correo y el rol no se editan desde el perfil:
+// el correo identifica la cuenta en la recuperación y el rol lo asigna un administrador)
+export const updateUsername = async (id: number, username: string) => {
+  const result = await pool.query(
+    'UPDATE users SET username = $1 WHERE id = $2 RETURNING id, username, email, role',
+    [username.trim(), id]
+  );
+  return result.rows[0];
+};
+
 // Generar JWT Token
 export const generateToken = (userId: number, username: string, role: string): string => {
-  const token = jwt.sign(
+  return jwt.sign(
     { userId, username, role },
-    process.env.JWT_SECRET || 'your-secret-key',
-    { expiresIn: '24h' }
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN, algorithm: 'HS256' } as jwt.SignOptions
   );
-  return token;
 };
 
 // Obtener agentes

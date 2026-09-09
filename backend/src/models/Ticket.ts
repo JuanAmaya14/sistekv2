@@ -3,7 +3,8 @@ import { sequelize } from '../config/database'; // <-- Agregar llaves
 import User from './User';
 import type TicketHistory from './TicketHistory';
 
-export type TicketPriority = 'bajo' | 'medio' | 'alto' | 'urgente';
+// Debe coincidir con VALID_PRIORITIES de ticketService
+export type TicketPriority = 'Alta' | 'Media' | 'Baja';
 export type TicketStatus = 'Abierto' | 'En progreso' | 'Cerrado';
 
 export class Ticket extends Model<
@@ -44,7 +45,7 @@ Ticket.init(
       allowNull: false
     },
     priority: {
-      type: DataTypes.ENUM('bajo', 'medio', 'alto', 'urgente'),
+      type: DataTypes.ENUM('Alta', 'Media', 'Baja'),
       allowNull: false
     },
     type: {

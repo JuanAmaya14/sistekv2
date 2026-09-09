@@ -19,6 +19,8 @@ if (process.env.NODE_ENV === 'development' && !isDocker) {
 
 const isRemoteDb = databaseUrl.includes('railway') ||
   databaseUrl.includes('rlwy.net') ||
+  databaseUrl.includes('supabase.co') ||
+  databaseUrl.includes('pooler.supabase.com') ||
   process.env.NODE_ENV === 'production';
 
 // 1. Instancia de Sequelize para los nuevos modelos usando la URL procesada

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { JWT_SECRET } from '../config/env';
 
 declare global {
   namespace Express {
@@ -11,19 +12,33 @@ declare global {
   }
 }
 
+const VALID_ROLES = new Set(['cliente', 'agente', 'administrador']);
+
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeader = req.headers.authorization;
 
+    // Solo se acepta el esquema Bearer, con token presente
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No autorizado - Token no proporcionado' });
+    }
+
+    const token = authHeader.slice(7).trim();
     if (!token) {
       return res.status(401).json({ error: 'No autorizado - Token no proporcionado' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as {
+    // algorithms fijo: evita ataques de confusión de algoritmo (alg: none / HS vs RS)
+    const decoded = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] }) as {
       userId: number;
       username: string;
       role: string;
     };
+
+    // El rol viene del token; se valida que sea uno de los conocidos
+    if (!decoded.userId || !VALID_ROLES.has(decoded.role)) {
+      return res.status(401).json({ error: 'Token inválido' });
+    }
 
     req.userId = decoded.userId;
     req.username = decoded.username;

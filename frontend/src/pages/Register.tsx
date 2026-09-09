@@ -28,7 +28,7 @@ function Register() {
     setError("");
 
     try {
-      await authService.register(username, email, password, "cliente");
+      await authService.register(username, email, password);
       alert("Registro exitoso");
       navigate("/");
     } catch (err: any) {

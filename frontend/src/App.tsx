@@ -9,6 +9,7 @@ import AdminTickets from './pages/AdminTickets';
 import Reports from './pages/Reports';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/tickets" element={<Tickets />} />
           <Route path="/admin-tickets" element={<AdminTickets />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/configuracion" element={<Settings />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>

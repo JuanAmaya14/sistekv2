@@ -3,6 +3,7 @@ import multer from 'multer';
 import * as attachmentController from '../controllers/attachmentController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { upload } from '../middleware/upload';
+import { uploadLimiter } from '../middlewares/rateLimiter';
 
 const router = Router();
 router.use(authMiddleware);
@@ -24,7 +25,7 @@ const multerUpload = (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Subir adjunto a un ticket
-router.post('/ticket/:ticketId', multerUpload, attachmentController.uploadAttachment);
+router.post('/ticket/:ticketId', uploadLimiter, multerUpload, attachmentController.uploadAttachment);
 
 // Listar adjuntos de un ticket
 router.get('/ticket/:ticketId', attachmentController.getAttachments);

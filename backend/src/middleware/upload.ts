@@ -1,6 +1,7 @@
 import multer, { FileFilterCallback } from 'multer';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 
 const UPLOAD_DIR = path.join(process.cwd(), 'uploads');
 
@@ -9,18 +10,26 @@ if (!fs.existsSync(UPLOAD_DIR)) {
   fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 }
 
-const ALLOWED_MIMES = new Set([
-  'image/jpeg',
-  'image/png',
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-]);
+// El MIME lo envía el cliente y se puede falsificar, por eso además se exige
+// que la extensión corresponda a ese MIME. Así no se puede guardar un .html
+// declarándolo como image/png.
+const ALLOWED_TYPES: Record<string, string[]> = {
+  'image/jpeg': ['.jpg', '.jpeg'],
+  'image/png': ['.png'],
+  'application/pdf': ['.pdf'],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+};
 
 const storage = multer.diskStorage({
   destination: UPLOAD_DIR,
   filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    // La extensión se toma de la lista permitida para el MIME, nunca del
+    // nombre original: evita rutas (../) y extensiones ejecutables.
+    const allowedExts = ALLOWED_TYPES[file.mimetype] ?? [];
+    const originalExt = path.extname(file.originalname).toLowerCase();
+    const ext = allowedExts.includes(originalExt) ? originalExt : allowedExts[0] ?? '';
+
+    const unique = `${Date.now()}-${crypto.randomBytes(12).toString('hex')}`;
     cb(null, `${unique}${ext}`);
   },
 });
@@ -30,17 +39,28 @@ const fileFilter = (
   file: Express.Multer.File,
   cb: FileFilterCallback
 ) => {
-  if (ALLOWED_MIMES.has(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Formato no permitido. Solo se aceptan JPG, PNG, PDF y DOCX.'));
+  const allowedExts = ALLOWED_TYPES[file.mimetype];
+
+  if (!allowedExts) {
+    return cb(new Error('Formato no permitido. Solo se aceptan JPG, PNG, PDF y DOCX.'));
   }
+
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (!allowedExts.includes(ext)) {
+    return cb(new Error('La extensión del archivo no coincide con su tipo declarado.'));
+  }
+
+  cb(null, true);
 };
 
 export const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10 MB
+    files: 1,
+    fields: 10,
+  },
 });
 
-export { UPLOAD_DIR };
+export { UPLOAD_DIR, ALLOWED_TYPES };
