@@ -8,7 +8,7 @@ const BCRYPT_ROUNDS = 12;
 
 // Hash de referencia para igualar el tiempo de respuesta cuando el usuario no existe
 // (evita distinguir "correo inexistente" de "contraseña incorrecta" por el tiempo).
-const DUMMY_HASH = '$2a$12$C6UzMDM.H6dfI/f/IKcEe.HTgL7Tz1sYtvrjT2vsvGSQhKvUJ1jJa';
+const DUMMY_HASH = '';
 
 // Obtener todos los usuarios
 export const getAllUsers = async () => {
