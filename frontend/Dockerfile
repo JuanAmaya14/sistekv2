@@ -2,11 +2,16 @@ FROM node:20.8.1-alpine AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
-RUN npm install --legacy-peer-deps
+RUN npm ci --legacy-peer-deps --ignore-scripts
 
-COPY . .
+COPY index.html tsconfig.json tsconfig.node.json vite.config.ts ./
+COPY src ./src
+
+# URL pública del backend; Vite la incrusta en el bundle durante el build
+ARG VITE_BACKEND_URL=http://localhost:4000
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 
 RUN npm run build
 

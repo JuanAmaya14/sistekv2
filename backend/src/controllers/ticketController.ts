@@ -127,7 +127,7 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
       });
     }
 
-    const ticket = await ticketService.getTicketById(parseInt(id));
+    const ticket = await ticketService.getTicketById(Number.parseInt(id));
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
@@ -137,7 +137,7 @@ export const updateTicketStatus = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'No tienes permisos para cambiar el estado de este ticket' });
     }
 
-    const updatedTicket = await ticketService.updateTicketStatus(parseInt(id), status, userId);
+    const updatedTicket = await ticketService.updateTicketStatus(Number.parseInt(id), status, userId);
     res.json(updatedTicket);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
@@ -161,12 +161,12 @@ export const assignTicketToAgent = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Solo administradores pueden asignar tickets' });
     }
 
-    const ticket = await ticketService.getTicketById(parseInt(id));
+    const ticket = await ticketService.getTicketById(Number.parseInt(id));
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
 
-    const updatedTicket = await ticketService.assignTicketToAgent(parseInt(id), agentId, userId);
+    const updatedTicket = await ticketService.assignTicketToAgent(Number.parseInt(id), agentId, userId);
     res.json(updatedTicket);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
@@ -214,7 +214,7 @@ export const updateTicketPriority = async (req: Request, res: Response) => {
       });
     }
 
-    const ticket = await ticketService.getTicketById(parseInt(id));
+    const ticket = await ticketService.getTicketById(Number.parseInt(id));
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }
@@ -223,7 +223,7 @@ export const updateTicketPriority = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Solo puedes modificar tickets asignados a ti' });
     }
 
-    const updatedTicket = await ticketService.updateTicketPriority(parseInt(id), priority, userId);
+    const updatedTicket = await ticketService.updateTicketPriority(Number.parseInt(id), priority, userId);
     res.json(updatedTicket);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
@@ -295,7 +295,7 @@ export const deleteTicket = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Solo administradores pueden eliminar tickets' });
     }
 
-    const ticket = await ticketService.deleteTicket(parseInt(id));
+    const ticket = await ticketService.deleteTicket(Number.parseInt(id));
     if (!ticket) {
       return res.status(404).json({ error: 'Ticket no encontrado' });
     }

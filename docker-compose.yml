@@ -43,7 +43,10 @@ services:
       - sistek_network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_BACKEND_URL=http://localhost:4000
     container_name: frontend_container
     restart: always
     ports:

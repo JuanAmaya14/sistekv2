@@ -165,7 +165,7 @@ const verHistorial = async (ticketId: number) => {
     } else {
       const userData = authService.getCurrentUser();
       setUser(userData);
-      cargarTickets();
+      void cargarTickets();
     }
   }, [navigate]);
 
@@ -173,7 +173,7 @@ const verHistorial = async (ticketId: number) => {
   useEffect(() => {
     if (user && !filtroBusqueda) {
       const interval = setInterval(() => {
-        cargarTickets();
+        void cargarTickets();
       }, 5000);
       return () => clearInterval(interval);
     }
@@ -226,7 +226,7 @@ const verHistorial = async (ticketId: number) => {
       setDescription("");
       setPriority("Media");
       setType("Software");
-      cargarTickets();
+      void cargarTickets();
     } catch (err: any) {
       setError(err.message || "Error al crear ticket");
     } finally {
@@ -398,10 +398,10 @@ const verHistorial = async (ticketId: number) => {
               )}
 
               <div style={{ marginBottom: "14px" }}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: dk.label, marginBottom: "6px" }}>
+                <label htmlFor="ticket-title" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: dk.label, marginBottom: "6px" }}>
                   📌 Título del ticket
                 </label>
-                <input
+                <input id="ticket-title"
                   placeholder="Título del ticket"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -417,10 +417,10 @@ const verHistorial = async (ticketId: number) => {
               </div>
 
               <div style={{ marginBottom: "14px" }}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: dk.label, marginBottom: "6px" }}>
+                <label htmlFor="ticket-description" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: dk.label, marginBottom: "6px" }}>
                   📝 Descripción
                 </label>
-                <textarea
+                <textarea id="ticket-description"
                   placeholder="Descripción detallada del problema"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -437,10 +437,10 @@ const verHistorial = async (ticketId: number) => {
               </div>
 
               <div style={{ marginBottom: "20px" }}>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: "600", color: dk.label, marginBottom: "6px" }}>
+                <label htmlFor="ticket-type" style={{ display: "block", fontSize: "13px", fontWeight: "600", color: dk.label, marginBottom: "6px" }}>
                   🏷️ Tipo
                 </label>
-                <select
+                <select id="ticket-type"
                   value={type}
                   onChange={(e) => setType(e.target.value)}
                   disabled={loading}
@@ -1062,7 +1062,7 @@ const verHistorial = async (ticketId: number) => {
                         border: `1px solid ${isDark ? "#2d4a8a" : "#bfdbfe"}`,
                         borderLeft: "4px solid #3b82f6",
                       }}>
-                        <label style={{
+                        <label htmlFor={`estado-${ticket.id}`} style={{
                           display: "block", fontSize: "11px", fontWeight: "700",
                           color: isDark ? "#93c5fd" : "#2563eb",
                           marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px",
@@ -1070,7 +1070,7 @@ const verHistorial = async (ticketId: number) => {
                           📋 Cambiar Estado
                         </label>
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                          <select
+                          <select id={`estado-${ticket.id}`}
                             onChange={(e) => setEstadoSeleccionado({...estadoSeleccionado, [ticket.id]: e.target.value})}
                             style={{
                               padding: "8px 12px",
@@ -1091,7 +1091,7 @@ const verHistorial = async (ticketId: number) => {
                           <button
                             onClick={() => {
                               const nuevoEstado = estadoSeleccionado[ticket.id] as 'Abierto' | 'En progreso' | 'Cerrado';
-                              if (nuevoEstado) cambiarEstado(ticket.id, nuevoEstado);
+                              if (nuevoEstado) void cambiarEstado(ticket.id, nuevoEstado);
                             }}
                             style={{
                               background: "linear-gradient(135deg,#3b82f6,#2563eb)",
@@ -1119,7 +1119,7 @@ const verHistorial = async (ticketId: number) => {
                         border: `1px solid ${isDark ? "#7c2d12" : "#fed7aa"}`,
                         borderLeft: "4px solid #f97316",
                       }}>
-                        <label style={{
+                        <label htmlFor={`prioridad-${ticket.id}`} style={{
                           display: "block", fontSize: "11px", fontWeight: "700",
                           color: isDark ? "#fb923c" : "#ea580c",
                           marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px",
@@ -1127,7 +1127,7 @@ const verHistorial = async (ticketId: number) => {
                           🎯 Cambiar Prioridad
                         </label>
                         <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                          <select
+                          <select id={`prioridad-${ticket.id}`}
                             value={prioridadSeleccionada[ticket.id] ?? ""}
                             onChange={(e) => setPrioridadSeleccionada(prev => ({ ...prev, [ticket.id]: e.target.value }))}
                             style={{
@@ -1145,7 +1145,7 @@ const verHistorial = async (ticketId: number) => {
                           <button
                             onClick={() => {
                               const p = prioridadSeleccionada[ticket.id] as PrioridadTicket;
-                              if (p) cambiarPrioridad(ticket.id, p);
+                              if (p) void cambiarPrioridad(ticket.id, p);
                             }}
                             disabled={!prioridadSeleccionada[ticket.id]}
                             style={{

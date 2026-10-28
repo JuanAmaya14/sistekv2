@@ -72,12 +72,12 @@ function ForgotPassword() {
                 Volver al inicio de sesión
               </button>
               <p className="link" style={{ marginTop: "14px" }}>
-                <span
+                <button type="button" className="link-button"
                   onClick={() => { setPageState("idle"); setEmail(""); }}
                   style={{ color: "#2563eb", cursor: "pointer" }}
                 >
                   Usar otro correo
-                </span>
+                </button>
               </p>
             </div>
           ) : (
@@ -105,7 +105,6 @@ function ForgotPassword() {
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                 disabled={pageState === "loading"}
-                autoFocus
               />
 
               <button
@@ -117,12 +116,12 @@ function ForgotPassword() {
               </button>
 
               <p className="link" style={{ marginTop: "14px" }}>
-                <span
+                <button type="button" className="link-button"
                   onClick={() => navigate("/")}
                   style={{ color: "#2563eb", cursor: "pointer" }}
                 >
                   ← Volver al inicio de sesión
-                </span>
+                </button>
               </p>
             </>
           )}

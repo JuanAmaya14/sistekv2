@@ -1,7 +1,5 @@
+import { API_URL, FILE_URL } from './config';
 import { authService } from './authService';
-
-const API_URL  = 'http://localhost:4000/api';
-const FILE_URL = 'http://localhost:4000/uploads';
 
 export interface Attachment {
   id: number;

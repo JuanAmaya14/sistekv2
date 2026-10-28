@@ -37,7 +37,7 @@ function ResetPassword() {
       } else {
         setPageState((result.reason as PageState) ?? "invalid");
       }
-    });
+    }).catch(() => setPageState("invalid"));
   }, [token]);
 
   const handleSubmit = async () => {
@@ -142,9 +142,9 @@ function ResetPassword() {
                 Solicitar nuevo enlace
               </button>
               <p className="link" style={{ marginTop: "14px" }}>
-                <span onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
+                <button type="button" className="link-button" onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
                   Volver al inicio de sesión
-                </span>
+                </button>
               </p>
             </div>
           )}
@@ -172,9 +172,9 @@ function ResetPassword() {
                 Solicitar nuevo enlace
               </button>
               <p className="link" style={{ marginTop: "14px" }}>
-                <span onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
+                <button type="button" className="link-button" onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
                   Volver al inicio de sesión
-                </span>
+                </button>
               </p>
             </div>
           )}
@@ -202,9 +202,9 @@ function ResetPassword() {
                 Solicitar nuevo enlace
               </button>
               <p className="link" style={{ marginTop: "14px" }}>
-                <span onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
+                <button type="button" className="link-button" onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
                   Volver al inicio de sesión
-                </span>
+                </button>
               </p>
             </div>
           )}
@@ -315,9 +315,9 @@ function ResetPassword() {
               </button>
 
               <p className="link" style={{ marginTop: "14px" }}>
-                <span onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
+                <button type="button" className="link-button" onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
                   ← Volver al inicio de sesión
-                </span>
+                </button>
               </p>
             </>
           )}

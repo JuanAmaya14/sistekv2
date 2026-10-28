@@ -46,7 +46,7 @@ function Dashboard() {
     } else {
       const currentUser = authService.getCurrentUser();
       setUser(currentUser);
-      cargarDatos(currentUser);
+      void cargarDatos(currentUser);
     }
   }, [navigate]);
 
@@ -357,10 +357,17 @@ function Dashboard() {
                     ticket.priority === 'Media' ? { badge: '#fef3c7', text: '#d97706' } :
                                                   { badge: '#dcfce7', text: '#059669' };
                   return (
-                    <div
+                    <button
+                      type="button"
                       key={ticket.id}
                       onClick={() => navigate('/tickets')}
                       style={{
+                        display: 'block',
+                        width: '100%',
+                        margin: 0,
+                        textAlign: 'left',
+                        font: 'inherit',
+                        color: 'inherit',
                         borderLeft: `4px solid ${statusColor.border}`,
                         borderRadius: '10px',
                         padding: '14px 16px',
@@ -397,15 +404,15 @@ function Dashboard() {
                           {ticket.priority}
                         </span>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
                 {tickets.length > 5 && (
                   <p style={{ textAlign: 'center', fontSize: '13px', color: isDark ? '#94a3b8' : '#64748b', margin: '4px 0 0 0' }}>
-                    +{tickets.length - 5} tickets más — <span
+                    +{tickets.length - 5} tickets más — <button type="button" className="link-button"
                       style={{ color: '#2563eb', cursor: 'pointer', fontWeight: '600' }}
                       onClick={() => navigate('/tickets')}
-                    >ver todos</span>
+                    >ver todos</button>
                   </p>
                 )}
               </div>

@@ -153,6 +153,28 @@ button:hover {
   text-align: center;
 }
 
+/* Botón con aspecto de enlace de texto: accesible con teclado y sin los
+   estilos globales de button */
+button.link-button,
+.form-box button.link-button {
+  width: auto;
+  padding: 0;
+  margin: 0;
+  background: none;
+  color: #2563eb;
+  border: none;
+  border-radius: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+button.link-button:hover,
+.form-box button.link-button:hover {
+  background: none;
+  text-decoration: underline;
+}
+
 /* DASHBOARD LAYOUT */
 .dashboard-container {
   display: flex;

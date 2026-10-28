@@ -8,7 +8,7 @@ const EXPIRY_DAYS = 7;
 // Calificar un ticket (HU-021) - solo cliente propietario
 export const rateTicket = async (req: Request, res: Response) => {
   try {
-    const ticketId = parseInt(req.params.id);
+    const ticketId = Number.parseInt(req.params.id);
     const { puntuacion, comentario } = req.body;
     const userId = req.userId!;
     const userRole = req.userRole!;
@@ -17,8 +17,8 @@ export const rateTicket = async (req: Request, res: Response) => {
       return res.status(403).json({ error: 'Solo los clientes pueden calificar tickets' });
     }
 
-    const score = parseInt(String(puntuacion));
-    if (isNaN(score) || score < 1 || score > 5) {
+    const score = Number.parseInt(String(puntuacion));
+    if (Number.isNaN(score) || score < 1 || score > 5) {
       return res.status(400).json({ error: 'La puntuación debe ser un número entre 1 y 5' });
     }
 
@@ -79,7 +79,7 @@ export const rateTicket = async (req: Request, res: Response) => {
 // Obtener calificación de un ticket
 export const getTicketRating = async (req: Request, res: Response) => {
   try {
-    const ticketId = parseInt(req.params.id);
+    const ticketId = Number.parseInt(req.params.id);
     const rating = await ratingService.getRatingByTicket(ticketId);
     res.json(rating ?? null);
   } catch (error: any) {

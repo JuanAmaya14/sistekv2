@@ -103,7 +103,7 @@ export const sendResetEmail = async (toEmail: string, rawToken: string): Promise
 
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
-    port: parseInt(process.env.EMAIL_PORT || '587'),
+    port: Number.parseInt(process.env.EMAIL_PORT || '587'),
     secure: process.env.EMAIL_PORT === '465',
     auth: {
       user: process.env.EMAIL_USER,

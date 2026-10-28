@@ -70,13 +70,13 @@ function AdminTickets() {
     }
 
     setUser(userData);
-    cargarDatos();
+    void cargarDatos();
   }, [navigate]);
 
   useEffect(() => {
     if (user && !filtroBusqueda) {
       const interval = setInterval(() => {
-        cargarDatos(false);
+        void cargarDatos(false);
       }, 5000);
       return () => clearInterval(interval);
     }
@@ -124,7 +124,7 @@ function AdminTickets() {
         delete updated[ticketId];
         return updated;
       });
-      cargarDatos();
+      void cargarDatos();
     } catch (err: any) {
       alert("Error: " + err.message);
     } finally {
@@ -242,7 +242,7 @@ function AdminTickets() {
     if (!window.confirm(`¿Seguro que deseas eliminar el ticket #${ticketId}? Esta acción no se puede deshacer.`)) return;
     try {
       await ticketService.deleteTicket(ticketId);
-      cargarDatos();
+      void cargarDatos();
     } catch (err: any) {
       alert("Error al eliminar ticket: " + err.message);
     }
@@ -569,11 +569,11 @@ function AdminTickets() {
 
                   {/* CAMBIAR PRIORIDAD */}
                   <div style={{ backgroundColor: dk.panelPriority, padding: "12px", borderRadius: "6px", marginBottom: "10px", borderLeft: "4px solid #f97316" }}>
-                    <label style={{ display: "block", fontSize: "13px", fontWeight: "bold", color: dk.labelPriority, marginBottom: "8px" }}>
+                    <label htmlFor={`prioridad-${ticket.id}`} style={{ display: "block", fontSize: "13px", fontWeight: "bold", color: dk.labelPriority, marginBottom: "8px" }}>
                       Cambiar Prioridad:
                     </label>
                     <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                      <select
+                      <select id={`prioridad-${ticket.id}`}
                         value={prioridadSeleccionada[ticket.id] ?? ""}
                         onChange={(e) => setPrioridadSeleccionada(prev => ({ ...prev, [ticket.id]: e.target.value }))}
                         style={{ padding: "8px", border: `1px solid ${dk.inputBorder}`, borderRadius: "4px", fontSize: "13px", flex: 1, backgroundColor: dk.input, color: dk.text, cursor: "pointer" }}
@@ -586,7 +586,7 @@ function AdminTickets() {
                       <button
                         onClick={() => {
                           const p = prioridadSeleccionada[ticket.id] as PrioridadTicket;
-                          if (p) cambiarPrioridad(ticket.id, p);
+                          if (p) void cambiarPrioridad(ticket.id, p);
                         }}
                         disabled={!prioridadSeleccionada[ticket.id]}
                         style={{
@@ -614,10 +614,10 @@ function AdminTickets() {
   marginBottom: "10px",
   borderLeft: "4px solid #10b981"
 }}>
-  <label style={{ display: "block", fontSize: "13px", fontWeight: "bold", color: dk.labelEstado, marginBottom: "8px" }}>
+  <label htmlFor={`estado-${ticket.id}`} style={{ display: "block", fontSize: "13px", fontWeight: "bold", color: dk.labelEstado, marginBottom: "8px" }}>
     Gestionar Estado del Ticket:
   </label>
-  <select
+  <select id={`estado-${ticket.id}`}
     value={ticket.status}
     onChange={(e) => cambiarEstado(ticket.id, e.target.value as 'Abierto' | 'En progreso' | 'Cerrado')}
     style={{
@@ -639,11 +639,11 @@ function AdminTickets() {
 
                   {ticket.status !== "Cerrado" && (
                     <div style={{ backgroundColor: dk.panelAssign, padding: "12px", borderRadius: "6px", marginBottom: "10px", borderLeft: "4px solid #3b82f6" }}>
-                      <label style={{ display: "block", fontSize: "13px", fontWeight: "bold", color: dk.labelAssign, marginBottom: "8px" }}>
+                      <label htmlFor={`agente-${ticket.id}`} style={{ display: "block", fontSize: "13px", fontWeight: "bold", color: dk.labelAssign, marginBottom: "8px" }}>
                         Asignar a Agente:
                       </label>
                       <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                        <select
+                        <select id={`agente-${ticket.id}`}
                           value={selectedAgents[ticket.id] || ""}
                           onChange={(e) => {
                             setSelectedAgents(prev => ({
@@ -671,9 +671,9 @@ function AdminTickets() {
                         </select>
                         <button
                           onClick={() => {
-                            const agentId = parseInt(selectedAgents[ticket.id]);
-                            if (!isNaN(agentId)) {
-                              asignarTicket(ticket.id, agentId);
+                            const agentId = Number.parseInt(selectedAgents[ticket.id]);
+                            if (!Number.isNaN(agentId)) {
+                              void asignarTicket(ticket.id, agentId);
                             }
                           }}
                           disabled={!selectedAgents[ticket.id] || loadingAssign === ticket.id}

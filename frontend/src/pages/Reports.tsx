@@ -86,7 +86,7 @@ function Reports() {
       .then(setAgentes)
       .catch(() => {});
 
-    cargarReporte({});
+    void cargarReporte({});
   }, [navigate]);
 
   const cargarReporte = async (f: ReportFilters) => {
@@ -108,13 +108,13 @@ function Reports() {
     if (filters.end_date)   active.end_date   = filters.end_date;
     if (filters.agent_id)   active.agent_id   = filters.agent_id;
     if (filters.status)     active.status     = filters.status;
-    cargarReporte(active);
+    void cargarReporte(active);
   };
 
   const limpiarFiltros = () => {
     const clean = { start_date: "", end_date: "", agent_id: "", status: "" };
     setFilters(clean);
-    cargarReporte({});
+    void cargarReporte({});
   };
 
   const descargarReporte = async () => {
@@ -252,10 +252,10 @@ function Reports() {
           </h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "14px", alignItems: "end" }}>
             <div>
-              <label style={{ display: "block", fontSize: "12px", color: isDark ? "#94a3b8" : "#6b7280", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <label htmlFor="filtro-desde" style={{ display: "block", fontSize: "12px", color: isDark ? "#94a3b8" : "#6b7280", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 📅 Fecha inicio
               </label>
-              <input
+              <input id="filtro-desde"
                 type="date"
                 value={filters.start_date}
                 onChange={e => setFilters(f => ({ ...f, start_date: e.target.value }))}
@@ -263,10 +263,10 @@ function Reports() {
               />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: "12px", color: isDark ? "#94a3b8" : "#6b7280", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <label htmlFor="filtro-hasta" style={{ display: "block", fontSize: "12px", color: isDark ? "#94a3b8" : "#6b7280", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 📅 Fecha fin
               </label>
-              <input
+              <input id="filtro-hasta"
                 type="date"
                 value={filters.end_date}
                 onChange={e => setFilters(f => ({ ...f, end_date: e.target.value }))}
@@ -274,10 +274,10 @@ function Reports() {
               />
             </div>
             <div>
-              <label style={{ display: "block", fontSize: "12px", color: isDark ? "#94a3b8" : "#6b7280", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <label htmlFor="filtro-agente" style={{ display: "block", fontSize: "12px", color: isDark ? "#94a3b8" : "#6b7280", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 👤 Agente
               </label>
-              <select
+              <select id="filtro-agente"
                 value={filters.agent_id}
                 onChange={e => setFilters(f => ({ ...f, agent_id: e.target.value }))}
                 style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${isDark ? "#334155" : "#e5e7eb"}`, borderRadius: "10px", fontSize: "13px", backgroundColor: isDark ? "#0f172a" : "white", color: isDark ? "#f1f5f9" : "#374151", boxSizing: "border-box", outline: "none", cursor: "pointer" }}
@@ -289,10 +289,10 @@ function Reports() {
               </select>
             </div>
             <div>
-              <label style={{ display: "block", fontSize: "12px", color: isDark ? "#94a3b8" : "#6b7280", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>
+              <label htmlFor="filtro-estado" style={{ display: "block", fontSize: "12px", color: isDark ? "#94a3b8" : "#6b7280", marginBottom: "6px", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.04em" }}>
                 🏷️ Estado
               </label>
-              <select
+              <select id="filtro-estado"
                 value={filters.status}
                 onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
                 style={{ width: "100%", padding: "10px 12px", border: `1.5px solid ${isDark ? "#334155" : "#e5e7eb"}`, borderRadius: "10px", fontSize: "13px", backgroundColor: isDark ? "#0f172a" : "white", color: isDark ? "#f1f5f9" : "#374151", boxSizing: "border-box", outline: "none", cursor: "pointer" }}

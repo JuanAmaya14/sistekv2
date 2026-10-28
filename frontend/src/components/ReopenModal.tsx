@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 const DIAS_LIMITE = 30;
@@ -22,6 +22,15 @@ export default function ReopenModal({ ticket, userRole, onConfirm, onClose }: Pr
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Cerrar con Escape (equivalente por teclado al clic fuera del modal)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const diasCerrado = diasDesde(ticket.updated_at);
   const plazoVencido = userRole === "cliente" && diasCerrado > DIAS_LIMITE;
 
@@ -42,7 +51,6 @@ export default function ReopenModal({ ticket, userRole, onConfirm, onClose }: Pr
 
   return (
     <div
-      onClick={onClose}
       style={{
         position: "fixed", inset: 0, zIndex: 1000,
         backgroundColor: "rgba(0,0,0,0.55)",
@@ -50,9 +58,21 @@ export default function ReopenModal({ ticket, userRole, onConfirm, onClose }: Pr
         padding: "16px"
       }}
     >
-      <div
-        onClick={e => e.stopPropagation()}
+      {/* Fondo clicable: cierra el modal al hacer clic fuera del contenido */}
+      <button
+        type="button"
+        aria-label="Cerrar"
+        tabIndex={-1}
+        onClick={onClose}
         style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          margin: 0, padding: 0, border: "none",
+          background: "transparent", cursor: "default"
+        }}
+      />
+      <div
+        style={{
+          position: "relative",
           backgroundColor: isDark ? "#1e293b" : "#ffffff",
           borderRadius: "10px",
           padding: "28px 32px",
@@ -90,17 +110,17 @@ export default function ReopenModal({ ticket, userRole, onConfirm, onClose }: Pr
           </div>
         ) : (
           <>
-            <label style={{
+            <label htmlFor="reopen-motivo" style={{
               display: "block", fontSize: "13px", fontWeight: "600",
               color: isDark ? "#94a3b8" : "#374151", marginBottom: "8px"
             }}>
               Motivo de la reapertura <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <textarea
+              id="reopen-motivo"
               value={motivo}
               onChange={e => setMotivo(e.target.value)}
               placeholder="Describe por qué necesitas reabrir este ticket..."
-              autoFocus
               style={{
                 width: "100%", minHeight: "110px",
                 padding: "10px 12px", borderRadius: "6px",

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:4000/api';
+import { API_URL } from './config';
 
 export interface User {
   id: number;
@@ -32,7 +32,7 @@ export const authService = {
   },
 
   // Renovar token antes de que expire
-  async setupTokenRefresh(): Promise<void> {
+  setupTokenRefresh(): void {
     const token = this.getToken();
     if (!token) return;
 

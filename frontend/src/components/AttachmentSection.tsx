@@ -32,7 +32,7 @@ export default function AttachmentSection({ ticketId, userId, userRole }: Props)
 
   // Tokens de color coherentes con el dk palette del resto de la app
   const c = {
-    sectionBg:  isDark ? 'transparent'  : 'transparent',
+    sectionBg:  'transparent',
     divider:    isDark ? '#334155'      : '#e5e7eb',
     label:      isDark ? '#93c5fd'      : '#2563eb',
     cardBg:     isDark ? '#1e1e1e'      : '#f9fafb',
@@ -55,7 +55,7 @@ export default function AttachmentSection({ ticketId, userId, userRole }: Props)
     }
   };
 
-  useEffect(() => { load(); }, [ticketId]);
+  useEffect(() => { void load(); }, [ticketId]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

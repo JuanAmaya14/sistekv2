@@ -82,12 +82,12 @@ function Register() {
 
           <p className="link">
             ¿Ya tienes cuenta?{" "}
-            <span
+            <button type="button" className="link-button"
               onClick={() => navigate("/")}
               style={{ color: "#2563eb", cursor: "pointer" }}
             >
               Inicia sesión
-            </span>
+            </button>
           </p>
         </div>
       </div>

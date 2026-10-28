@@ -1,6 +1,6 @@
+import { API_URL } from './config';
 import { authService } from './authService';
-
-const API_URL = 'http://localhost:4000/api';
+import { safeId } from './safeId';
 
 export interface Notification {
   id: number;
@@ -22,7 +22,7 @@ export const notificationService = {
   },
 
   async markAsRead(id: number): Promise<Notification> {
-    const response = await fetch(`${API_URL}/notifications/${id}/read`, {
+    const response = await fetch(`${API_URL}/notifications/${safeId(id)}/read`, {
       method: 'PUT',
       headers: authService.getAuthHeaders()
     });

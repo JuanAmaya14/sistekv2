@@ -26,7 +26,7 @@ function NotificationBell() {
   };
 
   useEffect(() => {
-    loadNotifications();
+    void loadNotifications();
     const interval = setInterval(loadNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -158,10 +158,18 @@ function NotificationBell() {
               {notifications.map((n) => {
                 const color = priorityColor(n.ticket_priority);
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={n.id}
                     onClick={() => handleNotificationClick(n)}
                     style={{
+                      display: 'block',
+                      width: '100%',
+                      margin: 0,
+                      textAlign: 'left',
+                      font: 'inherit',
+                      color: 'inherit',
+                      border: 'none',
                       padding: '12px 16px',
                       borderBottom: '1px solid #f3f4f6',
                       cursor: 'pointer',
@@ -229,7 +237,7 @@ function NotificationBell() {
                         ● Nuevo
                       </span>
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>

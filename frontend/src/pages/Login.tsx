@@ -78,19 +78,19 @@ function Login() {
           </button>
 
           <p className="link" style={{ marginTop: "10px" }}>
-            <span
+            <button type="button" className="link-button"
               onClick={() => navigate("/forgot-password")}
               style={{ color: "#2563eb", cursor: "pointer", fontSize: "13px" }}
             >
               ¿Olvidaste tu contraseña?
-            </span>
+            </button>
           </p>
 
           <p className="link">
             ¿No tienes cuenta?{" "}
-            <span onClick={() => navigate("/register")} style={{color:"#2563eb", cursor:"pointer"}}>
+            <button type="button" className="link-button" onClick={() => navigate("/register")} style={{color:"#2563eb", cursor:"pointer"}}>
               Regístrate
-            </span>
+            </button>
           </p>
         </div>
       </div>

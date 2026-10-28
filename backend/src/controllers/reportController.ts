@@ -33,7 +33,7 @@ export const getReport = async (req: Request, res: Response) => {
     const filters: reportService.ReportFilters = {};
     if (start_date && typeof start_date === 'string') filters.start_date = start_date;
     if (end_date   && typeof end_date   === 'string') filters.end_date   = end_date;
-    if (agent_id   && typeof agent_id   === 'string') filters.agent_id   = parseInt(agent_id);
+    if (agent_id   && typeof agent_id   === 'string') filters.agent_id   = Number.parseInt(agent_id);
     if (status     && typeof status     === 'string') filters.status     = status;
 
     const data = await reportService.getReportData(filters);
@@ -53,7 +53,7 @@ export const downloadReport = async (req: Request, res: Response) => {
     const filters: reportService.ReportFilters = {};
     if (start_date && typeof start_date === 'string') filters.start_date = start_date;
     if (end_date   && typeof end_date   === 'string') filters.end_date   = end_date;
-    if (agent_id   && typeof agent_id   === 'string') filters.agent_id   = parseInt(agent_id);
+    if (agent_id   && typeof agent_id   === 'string') filters.agent_id   = Number.parseInt(agent_id);
     if (status     && typeof status     === 'string') filters.status     = status;
 
     const [reportData, tickets] = await Promise.all([

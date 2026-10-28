@@ -1,6 +1,7 @@
+import { API_URL } from './config';
 import { authService } from './authService';
+import { safeId } from './safeId';
 
-const API_URL = 'http://localhost:4000/api';
 
 export const PRIORIDADES = ['Alta', 'Media', 'Baja'] as const;
 export type PrioridadTicket = typeof PRIORIDADES[number];
@@ -139,9 +140,8 @@ export const ticketService = {
 
   // Buscar tickets por palabra clave en título o descripción
   async searchTickets(query: string): Promise<Ticket[]> {
-    const url = query.trim()
-      ? `${API_URL}/tickets/search?q=${encodeURIComponent(query.trim())}`
-      : `${API_URL}/tickets/search`;
+    const url = new URL(`${API_URL}/tickets/search`);
+    if (query.trim()) url.searchParams.set('q', query.trim());
     const response = await fetch(url, {
       headers: authService.getAuthHeaders()
     });
@@ -151,7 +151,7 @@ export const ticketService = {
 
   // Reabrir ticket (HU-019)
   async reopenTicket(id: number, motivo: string): Promise<Ticket> {
-    const response = await fetch(`${API_URL}/tickets/${id}/reopen`, {
+    const response = await fetch(`${API_URL}/tickets/${safeId(id)}/reopen`, {
       method: 'POST',
       headers: authService.getAuthHeaders(),
       body: JSON.stringify({ motivo })

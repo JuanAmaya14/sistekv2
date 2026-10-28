@@ -205,8 +205,8 @@ function Settings() {
             <h3 style={{ marginTop: 0, fontSize: "17px" }}>👤 Mi perfil</h3>
 
             <div style={{ marginBottom: "16px" }}>
-              <label style={estiloLabel}>Nombre de usuario</label>
-              <input
+              <label htmlFor="settings-username" style={estiloLabel}>Nombre de usuario</label>
+              <input id="settings-username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -220,15 +220,15 @@ function Settings() {
 
             <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
               <div style={{ flex: 1, minWidth: "220px" }}>
-                <label style={estiloLabel}>Correo electrónico</label>
-                <input type="email" value={user.email} disabled style={{ ...estiloInput, opacity: 0.6 }} />
+                <label htmlFor="settings-email" style={estiloLabel}>Correo electrónico</label>
+                <input id="settings-email" type="email" value={user.email} disabled style={{ ...estiloInput, opacity: 0.6 }} />
                 <span style={{ fontSize: "12px", color: isDark ? "#64748b" : "#94a3b8" }}>
                   Identifica tu cuenta y no se puede modificar.
                 </span>
               </div>
 
               <div style={{ minWidth: "160px" }}>
-                <label style={estiloLabel}>Rol</label>
+                <span style={estiloLabel}>Rol</span>
                 <div style={{ marginTop: "6px" }}>
                   <span
                     style={{
@@ -270,8 +270,8 @@ function Settings() {
             </p>
 
             <div style={{ marginBottom: "14px" }}>
-              <label style={estiloLabel}>Contraseña actual</label>
-              <input
+              <label htmlFor="settings-password-actual" style={estiloLabel}>Contraseña actual</label>
+              <input id="settings-password-actual"
                 type="password"
                 value={passwordActual}
                 onChange={(e) => setPasswordActual(e.target.value)}
@@ -281,8 +281,8 @@ function Settings() {
             </div>
 
             <div style={{ marginBottom: "14px" }}>
-              <label style={estiloLabel}>Nueva contraseña</label>
-              <input
+              <label htmlFor="settings-password-nueva" style={estiloLabel}>Nueva contraseña</label>
+              <input id="settings-password-nueva"
                 type="password"
                 value={passwordNueva}
                 onChange={(e) => setPasswordNueva(e.target.value)}
@@ -298,7 +298,7 @@ function Settings() {
                   return (
                     <li
                       key={regla.texto}
-                      style={{ fontSize: "12.5px", color: ok ? "#16a34a" : isDark ? "#94a3b8" : "#94a3b8" }}
+                      style={{ fontSize: "12.5px", color: ok ? "#16a34a" : "#94a3b8" }}
                     >
                       {ok ? "✓" : "○"} {regla.texto}
                     </li>
@@ -308,8 +308,8 @@ function Settings() {
             )}
 
             <div>
-              <label style={estiloLabel}>Confirmar nueva contraseña</label>
-              <input
+              <label htmlFor="settings-password-confirmar" style={estiloLabel}>Confirmar nueva contraseña</label>
+              <input id="settings-password-confirmar"
                 type="password"
                 value={passwordConfirmar}
                 onChange={(e) => setPasswordConfirmar(e.target.value)}

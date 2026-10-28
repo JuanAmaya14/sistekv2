@@ -1,6 +1,5 @@
+import { API_URL } from './config';
 import { authService } from './authService';
-
-const API_URL = 'http://localhost:4000/api';
 
 export interface Comment {
   id: number;
