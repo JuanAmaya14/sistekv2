@@ -14,6 +14,29 @@ const requirements = [
   { label: "Un número", test: (p: string) => /\d/.test(p) },
 ];
 
+// Estados en los que el enlace no sirve: comparten el mismo panel y solo
+// cambian icono, color y textos.
+const ENLACE_NO_DISPONIBLE: Partial<Record<PageState, { icono: string; fondo: string; titulo: string; texto: string }>> = {
+  expired: {
+    icono: "⏰",
+    fondo: "#fef3c7",
+    titulo: "Enlace expirado",
+    texto: "Este enlace de recuperación ha expirado (validez de 30 minutos). Solicita uno nuevo para continuar.",
+  },
+  used: {
+    icono: "🔒",
+    fondo: "#fee2e2",
+    titulo: "Enlace ya utilizado",
+    texto: "Este enlace de recuperación ya fue utilizado anteriormente. Si necesitas cambiar la contraseña nuevamente, solicita un nuevo enlace.",
+  },
+  invalid: {
+    icono: "❌",
+    fondo: "#fee2e2",
+    titulo: "Enlace no válido",
+    texto: "El enlace de recuperación no es válido o ha expirado. Solicita uno nuevo para continuar.",
+  },
+};
+
 function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -70,6 +93,8 @@ function ResetPassword() {
     }
   };
 
+  const panelNoDisponible = ENLACE_NO_DISPONIBLE[pageState];
+
   const passwordStrength = requirements.filter((r) => r.test(newPassword)).length;
 
   const strengthColor =
@@ -119,81 +144,20 @@ function ResetPassword() {
             </div>
           )}
 
-          {/* ── Enlace expirado ── */}
-          {pageState === "expired" && (
+          {/* ── Enlace expirado, ya usado o inválido ── */}
+          {panelNoDisponible && (
             <div style={{ textAlign: "center" }}>
               <div style={{
                 width: "56px", height: "56px", borderRadius: "50%",
-                backgroundColor: "#fef3c7", display: "flex",
+                backgroundColor: panelNoDisponible.fondo, display: "flex",
                 alignItems: "center", justifyContent: "center",
                 margin: "0 auto 16px auto", fontSize: "28px"
               }}>
-                ⏰
+                {panelNoDisponible.icono}
               </div>
-              <h2 style={{ marginBottom: "12px" }}>Enlace expirado</h2>
+              <h2 style={{ marginBottom: "12px" }}>{panelNoDisponible.titulo}</h2>
               <p style={{ color: "#475569", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
-                Este enlace de recuperación ha expirado (validez de 30 minutos).
-                Solicita uno nuevo para continuar.
-              </p>
-              <button
-                onClick={() => navigate("/forgot-password")}
-                style={{ backgroundColor: "#2563eb" }}
-              >
-                Solicitar nuevo enlace
-              </button>
-              <p className="link" style={{ marginTop: "14px" }}>
-                <button type="button" className="link-button" onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
-                  Volver al inicio de sesión
-                </button>
-              </p>
-            </div>
-          )}
-
-          {/* ── Enlace ya usado ── */}
-          {pageState === "used" && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{
-                width: "56px", height: "56px", borderRadius: "50%",
-                backgroundColor: "#fee2e2", display: "flex",
-                alignItems: "center", justifyContent: "center",
-                margin: "0 auto 16px auto", fontSize: "28px"
-              }}>
-                🔒
-              </div>
-              <h2 style={{ marginBottom: "12px" }}>Enlace ya utilizado</h2>
-              <p style={{ color: "#475569", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
-                Este enlace de recuperación ya fue utilizado anteriormente.
-                Si necesitas cambiar la contraseña nuevamente, solicita un nuevo enlace.
-              </p>
-              <button
-                onClick={() => navigate("/forgot-password")}
-                style={{ backgroundColor: "#2563eb" }}
-              >
-                Solicitar nuevo enlace
-              </button>
-              <p className="link" style={{ marginTop: "14px" }}>
-                <button type="button" className="link-button" onClick={() => navigate("/")} style={{ color: "#2563eb", cursor: "pointer" }}>
-                  Volver al inicio de sesión
-                </button>
-              </p>
-            </div>
-          )}
-
-          {/* ── Enlace inválido ── */}
-          {pageState === "invalid" && (
-            <div style={{ textAlign: "center" }}>
-              <div style={{
-                width: "56px", height: "56px", borderRadius: "50%",
-                backgroundColor: "#fee2e2", display: "flex",
-                alignItems: "center", justifyContent: "center",
-                margin: "0 auto 16px auto", fontSize: "28px"
-              }}>
-                ❌
-              </div>
-              <h2 style={{ marginBottom: "12px" }}>Enlace no válido</h2>
-              <p style={{ color: "#475569", fontSize: "14px", lineHeight: "1.6", marginBottom: "24px" }}>
-                El enlace de recuperación no es válido o ha expirado.
-                Solicita uno nuevo para continuar.
+                {panelNoDisponible.texto}
               </p>
               <button
                 onClick={() => navigate("/forgot-password")}
